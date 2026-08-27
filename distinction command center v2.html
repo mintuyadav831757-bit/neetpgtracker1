@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0F0D">
+<title>Distinction — Daily Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B0F0D; --surface:#131917; --surface2:#0F1513; --border:#22302A;
+  --ink:#ECE9E0; --ink-soft:#8B958F;
+  --path:#E1566A;    --path-dim:rgba(225,86,106,0.14);
+  --micro:#4FCB8E;   --micro-dim:rgba(79,203,142,0.14);
+  --pharma:#5FA3E0;  --pharma-dim:rgba(95,163,224,0.14);
+  --amber:#E8A33D;   --amber-dim:rgba(232,163,61,0.14);
+  --red:#E4574A;     --red-dim:rgba(228,87,74,0.12);
+}
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; background:var(--bg); }
+body{ font-family:'IBM Plex Sans',sans-serif; color:var(--ink); -webkit-font-smoothing:antialiased; }
+.app{ max-width:860px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:40px; }
+
+.header{ padding:20px 20px 14px; background:linear-gradient(180deg,#141C19 0%, var(--bg) 100%); border-bottom:1px solid var(--border); }
+.eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:2px; color:var(--ink-soft); text-transform:uppercase; display:flex; justify-content:space-between; }
+.byline{ color:var(--amber); text-decoration:none; }
+.dateline{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:23px; margin-top:4px; }
+.vitals-row{ display:flex; gap:9px; margin-top:12px; }
+.vital-chip{ flex:1; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:9px 11px; }
+.vital-chip .vlabel{ font-size:9.5px; letter-spacing:1px; text-transform:uppercase; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; }
+.vital-chip .vvalue{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:18px; margin-top:2px; }
+.vital-chip.amber .vvalue{ color:var(--amber); }
+.ecg-wrap{ margin-top:12px; height:30px; overflow:hidden; }
+.ecg-svg{ width:200%; height:30px; animation:ecgmove 5s linear infinite; }
+@keyframes ecgmove{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+
+.tabs{ display:flex; gap:5px; padding:10px 14px; position:sticky; top:0; background:var(--bg); z-index:5; border-bottom:1px solid var(--border); overflow-x:auto; }
+.tab{ flex:1; min-width:76px; background:var(--surface); border:1px solid var(--border); color:var(--ink-soft); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:12px; padding:9px 4px; border-radius:10px; cursor:pointer; white-space:nowrap; }
+.tab.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+.main{ flex:1; padding:16px 16px 10px; }
+.panel{ display:none; flex-direction:column; gap:14px; }
+.panel.active{ display:flex; }
+
+.card{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; }
+.card-title{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:14.5px; margin-bottom:4px; display:flex; align-items:center; gap:6px; }
+.card-sub{ font-size:11.5px; color:var(--ink-soft); margin-bottom:12px; line-height:1.4; }
+.card.warn{ border-color:var(--red); background:var(--red-dim); }
+.card.warn .card-title{ color:var(--red); }
+
+.checkrow{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+.checkrow:last-child{ border-bottom:none; }
+.checkbox{ width:22px; height:22px; border-radius:7px; border:1.5px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--bg); font-weight:700; }
+.checkbox.on{ background:var(--micro); border-color:var(--micro); }
+.checkrow .rtext{ flex:1; }
+.checkrow .rtitle{ font-size:14px; font-weight:500; }
+.checkrow.done .rtitle{ text-decoration:line-through; color:var(--ink-soft); }
+.checkrow .rsub{ font-size:11.5px; color:var(--ink-soft); margin-top:1px; font-family:'IBM Plex Mono',monospace; }
+.dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.dot-path{ background:var(--path); } .dot-micro{ background:var(--micro); } .dot-pharma{ background:var(--pharma); } .dot-mix{ background:var(--ink-soft); }
+
+.progressbar{ height:7px; background:var(--surface2); border-radius:5px; overflow:hidden; margin-top:10px; }
+.progressfill{ height:100%; background:var(--micro); transition:width .3s ease; }
+
+.pomo-select{ display:flex; gap:8px; margin-bottom:14px; }
+.subj-pill{ flex:1; text-align:center; padding:9px 4px; border-radius:9px; border:1.5px solid var(--border); font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; cursor:pointer; color:var(--ink-soft); }
+.subj-pill.sel-path{ background:var(--path-dim); border-color:var(--path); color:var(--path); }
+.subj-pill.sel-micro{ background:var(--micro-dim); border-color:var(--micro); color:var(--micro); }
+.subj-pill.sel-pharma{ background:var(--pharma-dim); border-color:var(--pharma); color:var(--pharma); }
+.pomo-display{ text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:46px; letter-spacing:1px; margin:6px 0 16px; }
+.pomo-btns{ display:flex; gap:8px; }
+.btn{ flex:1; padding:11px; border-radius:10px; font-weight:600; font-size:13px; border:1.5px solid var(--border); background:var(--surface2); color:var(--ink); cursor:pointer; font-family:'IBM Plex Sans',sans-serif; }
+.btn-primary{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+.subj-block{ margin-bottom:6px; }
+.subj-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.subj-name{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px; }
+.subj-count{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-soft); }
+.chapter-row{ display:flex; align-items:center; gap:9px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; cursor:pointer; }
+.chapter-row:last-child{ border-bottom:none; }
+.chapter-row.on{ color:var(--ink-soft); text-decoration:line-through; }
+.paper-badge{ font-family:'IBM Plex Mono',monospace; font-size:9px; padding:2px 6px; border-radius:5px; background:var(--surface2); border:1px solid var(--border); color:var(--ink-soft); flex-shrink:0; }
+.hy-star{ color:var(--amber); flex-shrink:0; font-size:11px; }
+
+.weekgrid,.pyqgrid{ display:grid; gap:5px; font-family:'IBM Plex Mono',monospace; }
+.weekgrid{ grid-template-columns:90px repeat(5,1fr); }
+.wg-head{ font-size:9.5px; text-align:center; color:var(--ink-soft); line-height:1.3; padding-bottom:4px; }
+.wg-row-label{ font-size:11px; display:flex; align-items:center; color:var(--ink-soft); font-weight:600; }
+.wg-cell{ aspect-ratio:1; border-radius:8px; border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; }
+.wg-cell.on-path{ background:var(--path); border-color:var(--path); } .wg-cell.on-micro{ background:var(--micro); border-color:var(--micro); } .wg-cell.on-pharma{ background:var(--pharma); border-color:var(--pharma); }
+
+.pyqgrid{ grid-template-columns:50px repeat(5,1fr); margin-bottom:4px; }
+.pyq-head{ font-size:9.5px; text-align:center; color:var(--ink-soft); }
+.pyq-cell{ aspect-ratio:1; border-radius:7px; border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; }
+.pyq-cell.on{ background:var(--amber); border-color:var(--amber); color:var(--bg); }
+.pyq-row-label{ font-size:10.5px; color:var(--ink-soft); display:flex; align-items:center; font-weight:600; }
+
+.mcq-row{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.mcq-row:last-child{ border-bottom:none; }
+.mcq-label{ flex:1; font-size:13.5px; font-weight:500; }
+.mcq-today{ font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-soft); width:34px; text-align:right; }
+.mcq-btn{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; border:1.5px solid var(--border); background:var(--surface2); color:var(--ink); border-radius:8px; padding:7px 10px; cursor:pointer; }
+
+.bars{ display:flex; align-items:flex-end; justify-content:space-between; height:90px; gap:6px; margin-top:6px; }
+.bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.bar{ width:100%; max-width:26px; background:var(--micro); border-radius:4px 4px 0 0; min-height:2px; }
+.bar-label{ font-family:'IBM Plex Mono',monospace; font-size:9.5px; color:var(--ink-soft); }
+
+select,.input,textarea{ width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--ink); border-radius:9px; padding:10px 11px; font-family:'IBM Plex Sans',sans-serif; font-size:13px; margin-bottom:8px; }
+textarea{ resize:none; }
+.row-gap{ display:flex; gap:8px; }
+
+.item{ background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:11px 12px; margin-bottom:8px; }
+.item-top{ display:flex; justify-content:space-between; gap:8px; align-items:flex-start; }
+.item-title{ font-size:13.5px; font-weight:600; }
+.item-body{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; line-height:1.5; }
+.icon-btn{ background:none; border:none; color:var(--ink-soft); font-size:13px; cursor:pointer; padding:0; }
+
+.fc-card{ background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:26px 18px; text-align:center; min-height:110px; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:600; cursor:pointer; margin-bottom:10px; }
+.fc-tag{ font-size:10px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; text-align:center; margin-bottom:8px; }
+
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stat-box{ background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:14px; }
+.stat-num{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px; color:var(--micro); }
+.stat-label{ font-size:10.5px; color:var(--ink-soft); margin-top:3px; }
+
+.tag{ font-size:10px; padding:3px 8px; border-radius:20px; font-weight:600; font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+.tag-path{ background:var(--path-dim); color:var(--path); } .tag-micro{ background:var(--micro-dim); color:var(--micro); } .tag-pharma{ background:var(--pharma-dim); color:var(--pharma); }
+
+.coach-card{ background:linear-gradient(135deg, var(--surface) 0%, #171E1A 100%); border:1px solid var(--amber); border-radius:14px; padding:16px; }
+.coach-title{ font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:1.5px; color:var(--amber); text-transform:uppercase; margin-bottom:6px; }
+.coach-headline{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:16px; margin-bottom:6px; }
+.coach-body{ font-size:13px; color:var(--ink-soft); line-height:1.5; }
+
+.rules-list{ display:flex; flex-direction:column; gap:10px; }
+.rule-item{ display:flex; gap:10px; font-size:13px; line-height:1.5; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.rule-item:last-child{ border-bottom:none; padding-bottom:0; }
+.rule-num{ font-family:'IBM Plex Mono',monospace; color:var(--amber); font-weight:700; flex-shrink:0; }
+.source-link{ display:inline-block; margin-top:10px; font-size:11.5px; color:var(--micro); font-family:'IBM Plex Mono',monospace; text-decoration:none; }
+
+.tip-block{ margin-bottom:14px; }
+.tip-block:last-child{ margin-bottom:0; }
+.tip-head{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13.5px; margin-bottom:6px; display:flex; align-items:center; gap:7px; }
+.tip-body{ font-size:12.5px; color:var(--ink-soft); line-height:1.6; }
+.tip-body ul{ margin:4px 0 0 0; padding-left:18px; }
+.tip-body li{ margin-bottom:4px; }
+
+.badge-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.badge{ background:var(--surface2); border:1.5px solid var(--border); border-radius:12px; padding:12px 8px; text-align:center; opacity:0.4; }
+.badge.unlocked{ opacity:1; border-color:var(--amber); background:var(--amber-dim); }
+.badge .b-icon{ font-size:24px; }
+.badge .b-title{ font-family:'Space Grotesk',sans-serif; font-size:10px; font-weight:700; margin-top:5px; line-height:1.3; }
+
+.credit{ text-align:center; padding:18px 10px 4px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-soft); }
+.credit a{ color:var(--amber); text-decoration:none; font-weight:600; }
+
+.toast{ position:fixed; bottom:22px; left:50%; transform:translateX(-50%); background:var(--surface); border:1px solid var(--border); color:var(--ink); font-size:12.5px; padding:9px 18px; border-radius:20px; z-index:30; opacity:0; pointer-events:none; transition:opacity .25s ease; max-width:80%; text-align:center; }
+.toast.show{ opacity:1; }
+.loading{ text-align:center; padding:60px 20px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="app" id="app"><div class="loading" id="loading">Loading your progress…</div></div>
+
+<template id="mainTemplate">
+<div class="header">
+  <div class="eyebrow"><span>DISTINCTION SYSTEM · KNRUHS</span><a class="byline" href="https://www.instagram.com/Mintu__93" target="_blank" rel="noopener">by Kada Maruthi</a></div>
+  <div class="dateline" id="dateline">—</div>
+  <div class="vitals-row">
+    <div class="vital-chip"><div class="vlabel">Exam In</div><div class="vvalue" id="daysLeft">—</div></div>
+    <div class="vital-chip amber"><div class="vlabel">Streak</div><div class="vvalue" id="streakVal">0 🔥</div></div>
+    <div class="vital-chip"><div class="vlabel">Today</div><div class="vvalue" id="todayPct">0%</div></div>
+  </div>
+  <div class="ecg-wrap">
+    <svg class="ecg-svg" viewBox="0 0 600 30" preserveAspectRatio="none">
+      <polyline points="0,15 40,15 55,15 65,3 75,26 85,10 95,15 140,15 180,15 195,15 205,3 215,26 225,10 235,15 280,15 300,15 315,15 325,3 335,26 345,10 355,15 400,15 440,15 455,15 465,3 475,26 485,10 495,15 540,15 580,15 595,15 605,3 615,26 625,10 635,15" fill="none" stroke="#4FCB8E" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="today">Today</button>
+  <button class="tab" data-tab="chapters">Chapters</button>
+  <button class="tab" data-tab="practice">Practice</button>
+  <button class="tab" data-tab="intel">Exam Intel</button>
+  <button class="tab" data-tab="more">More</button>
+</div>
+
+<div class="main">
+
+  <!-- TODAY -->
+  <div class="panel active" id="panel-today">
+    <div class="coach-card">
+      <div class="coach-title">Coach's Word — Today</div>
+      <div class="coach-headline" id="coachHeadline">—</div>
+      <div class="coach-body" id="coachBody">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Today's Non-Negotiables</div>
+      <div class="card-sub">Tap each block as you complete it. All 5 done = streak day.</div>
+      <div id="checklist"></div>
+      <div class="progressbar"><div class="progressfill" id="todayFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Focus Timer</div>
+      <div class="card-sub">45 min focus block. Pick a subject, hit start, phone in another room.</div>
+      <div class="pomo-select" id="pomoSelect">
+        <div class="subj-pill sel-path" data-subj="path">PATH</div>
+        <div class="subj-pill" data-subj="micro">MICRO</div>
+        <div class="subj-pill" data-subj="pharma">PHARMA</div>
+      </div>
+      <div class="pomo-display" id="pomoDisplay">45:00</div>
+      <div class="pomo-btns">
+        <button class="btn btn-primary" id="pomoStart">Start</button>
+        <button class="btn" id="pomoReset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAPTERS -->
+  <div class="panel" id="panel-chapters">
+    <div class="card">
+      <div class="card-title">Chapter Tracker <span class="paper-badge">P1 / P2 tagged</span></div>
+      <div class="card-sub">★ = commonly high-yield / frequently repeated in KNRUHS-pattern papers. Paper split follows the standard NMC-CBME division — cross-check against your own college blueprint since KNRUHS hasn't published a topic-wise weightage sheet publicly.</div>
+      <div id="chaptersHost"></div>
+    </div>
+  </div>
+
+  <!-- PRACTICE -->
+  <div class="panel" id="panel-practice">
+    <div class="card">
+      <div class="card-title">MCQs Solved Today</div>
+      <div id="mcqHost"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Last 7 Days — MCQ Volume</div>
+      <div class="bars" id="mcqBars"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Weekly Focus Map</div>
+      <div class="card-sub">Mark a week's subject as revised once you've re-passed it.</div>
+      <div class="weekgrid" id="weekGrid"></div>
+    </div>
+  </div>
+
+  <!-- EXAM INTEL -->
+  <div class="panel" id="panel-intel">
+    <div class="card warn">
+      <div class="card-title">⚠ Coach's Warning — Read This</div>
+      <div style="font-size:13px; line-height:1.6;">
+        KNRUHS eligibility isn't a formality. Officially: you need <b>75% attendance in theory</b>, <b>80% in practical/clinical</b>, and <b>minimum 50% in internal assessments</b> to even sit the exam. If you're short anywhere, sort it with your HOD <b>this week</b> — not the night before the exam. Distinction means nothing if you're not eligible to write the paper.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Official KNRUHS Passing Rules</div>
+      <div class="card-sub">Sourced from KNRUHS Second MBBS (New Regulations) exam notifications.</div>
+      <div class="rules-list">
+        <div class="rule-item"><span class="rule-num">01</span><span>Each subject needs <b>50% marks in aggregate</b>, with a minimum <b>40:60 or 60:40 split</b> between Theory and Practical/Clinical+Viva. You cannot carry one and ignore the other.</span></div>
+        <div class="rule-item"><span class="rule-num">02</span><span>For two-paper subjects (Path, Micro, Pharma) — you need a <b>minimum 40% aggregate combining both papers</b>. A weak Paper I can sink a strong Paper II. Prep both equally.</span></div>
+        <div class="rule-item"><span class="rule-num">03</span><span>Theory papers are <b>3 hours, 10:00 AM–1:00 PM</b>, reporting by 9:00 AM. Papers are usually spread ~2 days apart across the exam window — confirm your exact 2026 dates on the KNRUHS site (link below).</span></div>
+        <div class="rule-item"><span class="rule-num">04</span><span>KNRUHS uses <b>digital valuation with a single answer booklet</b> — no extra sheets are issued. Plan your space before you write. Illegible or overcrowded answers cost real marks under digital scanning.</span></div>
+      </div>
+      <a class="source-link" href="https://www.knruhs.telangana.gov.in/exam-notifications/" target="_blank" rel="noopener">→ Confirm your exact Sept 2026 timetable on knruhs.telangana.gov.in</a>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Gold Standard Answer-Writing Tricks</div>
+      <div class="tip-block">
+        <div class="tip-head"><span class="dot dot-path"></span>Pathology</div>
+        <div class="tip-body">Structure every essay: Definition → Etiology → Pathogenesis → Morphology (gross + micro) → Clinical features → Complications. <ul><li>Always draw a labeled diagram — even a rough one earns marks a paragraph won't.</li><li>Use flowcharts for pathogenesis instead of prose paragraphs — faster to write, easier to score.</li></ul></div>
+      </div>
+      <div class="tip-block">
+        <div class="tip-head"><span class="dot dot-micro"></span>Microbiology</div>
+        <div class="tip-body">Fixed order for every organism: Morphology → Culture → Pathogenicity → Lab Diagnosis → Treatment/Prophylaxis. <ul><li>Draw culture media & colony morphology — examiners scan for this first.</li><li>Lab diagnosis flowcharts (sample → culture → identification) are the highest-yield diagram in this subject.</li></ul></div>
+      </div>
+      <div class="tip-block">
+        <div class="tip-head"><span class="dot dot-pharma"></span>Pharmacology</div>
+        <div class="tip-body">Fixed order: Classification → Mechanism of Action → Uses → Adverse Effects → Contraindications → Dose. <ul><li>Always name the prototype drug first, then the class.</li><li>Use comparison tables for "compare X vs Y" questions — faster, cleaner, higher marks per minute.</li></ul></div>
+      </div>
+      <div class="tip-block">
+        <div class="tip-head">⏱ Time Management (all 3 subjects)</div>
+        <div class="tip-body"><ul><li>First 5 minutes: read the full paper, mark which long essays you'll attempt first.</li><li>Attempt long essays (Group A) while your hand and mind are freshest — don't save them for the end.</li><li>Never leave a question blank — partial, structured answers score more than silence.</li></ul></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Previous Year Papers — Tracker</div>
+      <div class="card-sub">Straight talk: <b>knruhs.telangana.gov.in</b> only publishes exam notifications and results — it does not host past question paper PDFs. For actual papers, ask your college exam cell/library, seniors' WhatsApp groups, or archives like FirstRanker/GeckoMed. Once you solve one, mark it here.</div>
+      <div id="pyqHost"></div>
+    </div>
+  </div>
+
+  <!-- MORE -->
+  <div class="panel" id="panel-more">
+    <div class="card">
+      <div class="card-title">Your Numbers</div>
+      <div class="stat-grid" id="statGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 Achievements</div>
+      <div class="card-sub">Unlocked badges stay unlocked. Every one of these is proof, not decoration.</div>
+      <div class="badge-grid" id="badgeGrid"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Quick Note</div>
+      <select id="noteSubject"><option value="path">Pathology</option><option value="micro">Microbiology</option><option value="pharma">Pharmacology</option></select>
+      <input class="input" id="noteTitle" placeholder="Title (e.g. Amyloidosis staining)">
+      <textarea class="input" id="noteBody" rows="3" placeholder="Your note..."></textarea>
+      <button class="btn btn-primary" id="noteAdd" style="width:100%">Save Note</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Your Notes (<span id="noteCount">0</span>)</div>
+      <div id="noteList"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Flashcards</div>
+      <select id="fcSubject"><option value="path">Pathology</option><option value="micro">Microbiology</option><option value="pharma">Pharmacology</option></select>
+      <input class="input" id="fcFront" placeholder="Front (question)">
+      <input class="input" id="fcBack" placeholder="Back (answer)">
+      <button class="btn btn-primary" id="fcAdd" style="width:100%">Add Flashcard</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Review (<span id="fcCount">0</span> cards)</div>
+      <div class="fc-tag" id="fcTag">—</div>
+      <div class="fc-card" id="fcCard">Add a flashcard to start reviewing</div>
+      <div class="row-gap"><button class="btn" id="fcPrev" style="flex:1">◀ Prev</button><button class="btn" id="fcNext" style="flex:1">Next ▶</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Backup</div>
+      <div class="card-sub">Export your data so nothing is lost if you switch devices.</div>
+      <div class="row-gap">
+        <button class="btn" id="exportBtn" style="flex:1">Export JSON</button>
+        <button class="btn" id="importBtn" style="flex:1">Import JSON</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
+
+    <div class="credit">Built by <a href="https://www.instagram.com/Mintu__93" target="_blank" rel="noopener">Kada Maruthi</a> · Instagram @Mintu__93</div>
+  </div>
+
+</div>
+</template>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== SYLLABUS DATA ===================== */
+/* paper: 'P1' | 'P2' — standard NMC-CBME split. hy: true = commonly high-yield */
+const PATH_CHAPTERS = [
+  {n:"Cell Injury & Adaptations",paper:"P1",hy:false},{n:"Acute Inflammation",paper:"P1",hy:true},
+  {n:"Chronic Inflammation & Healing",paper:"P1",hy:true},{n:"Hemodynamic Disorders",paper:"P1",hy:true},
+  {n:"Genetic & Pediatric Diseases",paper:"P1",hy:false},{n:"Immunopathology",paper:"P1",hy:true},
+  {n:"Neoplasia — General",paper:"P1",hy:true},{n:"Environmental & Nutritional Pathology",paper:"P1",hy:false},
+  {n:"Infectious Disease Pathology",paper:"P1",hy:false},{n:"Basic Hematology",paper:"P1",hy:true},
+  {n:"Cardiovascular Pathology",paper:"P2",hy:true},{n:"Respiratory Pathology",paper:"P2",hy:true},
+  {n:"GIT Pathology",paper:"P2",hy:false},{n:"Liver, Gallbladder & Pancreas",paper:"P2",hy:true},
+  {n:"Kidney & Urinary Tract",paper:"P2",hy:true},{n:"Male Genital System",paper:"P2",hy:false},
+  {n:"Female Genital System",paper:"P2",hy:false},{n:"Breast Pathology",paper:"P2",hy:true},
+  {n:"Endocrine Pathology",paper:"P2",hy:false},{n:"Blood & Bone Marrow (detailed)",paper:"P2",hy:true},
+  {n:"Lymphoreticular System",paper:"P2",hy:true},{n:"Bone, Joint & Soft Tissue",paper:"P2",hy:false},
+  {n:"CNS Pathology",paper:"P2",hy:true},{n:"Skin Pathology",paper:"P2",hy:false},
+  {n:"Head & Neck / Miscellaneous",paper:"P2",hy:false}
+];
+const MICRO_CHAPTERS = [
+  {n:"General Microbiology & Sterilization",paper:"P1",hy:false},{n:"Immunology Basics",paper:"P1",hy:true},
+  {n:"Gram Positive Cocci",paper:"P1",hy:true},{n:"Gram Negative Cocci",paper:"P1",hy:false},
+  {n:"Enterobacteriaceae",paper:"P1",hy:true},{n:"Vibrio & Related Organisms",paper:"P1",hy:false},
+  {n:"Mycobacteria",paper:"P1",hy:true},{n:"Spirochetes",paper:"P1",hy:false},
+  {n:"General Virology",paper:"P2",hy:false},{n:"DNA Viruses",paper:"P2",hy:false},
+  {n:"RNA Viruses",paper:"P2",hy:false},{n:"HIV",paper:"P2",hy:true},
+  {n:"Hepatitis Viruses",paper:"P2",hy:true},{n:"General Mycology",paper:"P2",hy:false},
+  {n:"Systemic & Superficial Mycoses",paper:"P2",hy:false},{n:"Protozoa",paper:"P2",hy:true},
+  {n:"Helminths",paper:"P2",hy:false},{n:"Medical Entomology",paper:"P2",hy:false}
+];
+const PHARMA_CHAPTERS = [
+  {n:"General Pharmacology",paper:"P1",hy:true},{n:"Autonomic Nervous System Drugs",paper:"P1",hy:true},
+  {n:"Cardiovascular Drugs",paper:"P1",hy:true},{n:"CNS Drugs — Anesthetics & Sedatives",paper:"P1",hy:false},
+  {n:"CNS Drugs — Antiepileptics & Antipsychotics",paper:"P1",hy:false},{n:"Autacoids & NSAIDs",paper:"P1",hy:true},
+  {n:"Antimicrobial Chemotherapy",paper:"P2",hy:true},{n:"Antiviral & Antifungal Drugs",paper:"P2",hy:false},
+  {n:"Anti-TB & Antileprotic Drugs",paper:"P2",hy:true},{n:"Anticancer Drugs",paper:"P2",hy:false},
+  {n:"Endocrine Pharmacology",paper:"P2",hy:false},{n:"GIT Drugs",paper:"P2",hy:false},
+  {n:"Chemotherapy of Parasitic Infections",paper:"P2",hy:false},{n:"Miscellaneous / Recent Drugs",paper:"P2",hy:false}
+];
+
+const WEEK_LABELS = ["WK1\nAug 3–9","WK2\nAug 10–16","WK3\nAug 17–23","WK4\nAug 24–30","WK5\nAug 31–Sep 4"];
+const PYQ_YEARS = ["'21","'22","'23","'24","'25"];
+const EXAM_DATE = new Date("2026-09-05T00:00:00");
+
+const CHECKLIST_ITEMS = [
+  { key:"path", title:"Pathology — new topic block", sub:"06:45–09:15", dot:"dot-path" },
+  { key:"micro", title:"Microbiology — new topic block", sub:"09:45–11:45", dot:"dot-micro" },
+  { key:"pharma", title:"Pharmacology — new topic block", sub:"12:00–13:30", dot:"dot-pharma" },
+  { key:"mcq", title:"MCQ practice (rotating subject)", sub:"15:00–15:30", dot:"dot-mix" },
+  { key:"recall", title:"Blind recall — write 5 things, no notes", sub:"21:00–21:15", dot:"dot-mix" }
+];
+
+const COACH_MESSAGES = [
+  {h:"Distinction is a decision, not a mood.", b:"You don't need to feel ready. You need to open the book at 6:45 and let the checklist carry you. Motivation shows up after you start, not before."},
+  {h:"Eligibility comes before distinction.", b:"75% attendance, 80% practical, 50% internals — these aren't suggestions. If any of these are shaky, fix it this week. A brilliant answer sheet means nothing if you're not allowed to write it."},
+  {h:"Two-paper subjects punish imbalance.", b:"You need 40% combined across Paper I and II. Don't fall in love with one paper and neglect the other — KNRUHS doesn't average your enthusiasm, it averages your marks."},
+  {h:"Low-focus days are allowed. Zero days are not.", b:"If you only get 3 hours in today, do 3 focused hours. What kills a distinction attempt isn't a bad day — it's three bad days in a row that turn into a bad week."},
+  {h:"Write it, don't just read it.", b:"Every topic you can write from memory is a topic you actually know. Everything else is just familiarity — and familiarity doesn't survive a 3-hour paper."},
+  {h:"Your exam is set. Your prep isn't optional.", b:"KNRUHS runs a single answer booklet, digitally valued, no extra sheets. There is no room for a messy, last-minute effort. Build the habit now so exam week is just execution."},
+  {h:"Nobody is coming to save your streak but you.", b:"Check in with yourself daily. If you skip a day, don't spiral — restart tomorrow at 6:45 like nothing happened. Consistency beats intensity, every single time."},
+  {h:"Compare yourself to yesterday's version of you.", b:"Not to the topper, not to your roommate. Did you cover more today than yesterday? Did you recall more? That's the only scoreboard that matters until September 5."}
+];
+
+/* ===================== ACHIEVEMENTS ===================== */
+const ACHIEVEMENTS = [
+  {id:"streak3", icon:"🔥", title:"3-Day Streak", test:s=>s.streak>=3},
+  {id:"streak7", icon:"🔥🔥", title:"7-Day Warrior", test:s=>s.streak>=7},
+  {id:"streak14", icon:"🔥🔥🔥", title:"14-Day Unstoppable", test:s=>s.streak>=14},
+  {id:"firstchap", icon:"📖", title:"First Chapter Down", test:s=>chapCount(s)>0},
+  {id:"pathhalf", icon:"🩸", title:"Pathology 50%", test:s=>s.chapters.path.filter(Boolean).length>=Math.ceil(PATH_CHAPTERS.length/2)},
+  {id:"pathfull", icon:"🎓", title:"Pathology Complete", test:s=>s.chapters.path.every(Boolean)},
+  {id:"microhalf", icon:"🧫", title:"Microbiology 50%", test:s=>s.chapters.micro.filter(Boolean).length>=Math.ceil(MICRO_CHAPTERS.length/2)},
+  {id:"microfull", icon:"🎓", title:"Microbiology Complete", test:s=>s.chapters.micro.every(Boolean)},
+  {id:"pharmahalf", icon:"💊", title:"Pharmacology 50%", test:s=>s.chapters.pharma.filter(Boolean).length>=Math.ceil(PHARMA_CHAPTERS.length/2)},
+  {id:"pharmafull", icon:"🎓", title:"Pharmacology Complete", test:s=>s.chapters.pharma.every(Boolean)},
+  {id:"mcq100", icon:"🎯", title:"100 MCQ Club", test:s=>totalMcq(s)>=100},
+  {id:"mcq500", icon:"🎯🎯", title:"500 MCQ Club", test:s=>totalMcq(s)>=500},
+  {id:"mcq1000", icon:"🎯🎯🎯", title:"1000 MCQ Club", test:s=>totalMcq(s)>=1000},
+  {id:"fulldays5", icon:"⭐", title:"5 Perfect Days", test:s=>fullDays(s)>=5},
+  {id:"fulldays15", icon:"🌟", title:"15 Perfect Days", test:s=>fullDays(s)>=15},
+  {id:"syllabusdone", icon:"🏆", title:"Full Syllabus Covered", test:s=>chapCount(s)>=(PATH_CHAPTERS.length+MICRO_CHAPTERS.length+PHARMA_CHAPTERS.length)}
+];
+function chapCount(s){ return s.chapters.path.filter(Boolean).length + s.chapters.micro.filter(Boolean).length + s.chapters.pharma.filter(Boolean).length; }
+function totalMcq(s){ let t=0; Object.values(s.days).forEach(d=>t+=d.mcq.path+d.mcq.micro+d.mcq.pharma); return t; }
+function fullDays(s){ let c=0; Object.values(s.days).forEach(d=>{ if(Object.values(d.checklist).every(Boolean)) c++; }); return c; }
+
+/* ===================== STATE ===================== */
+let state=null, pomoInterval=null, pomoSeconds=45*60, pomoRunning=false, pomoSubject="path", fcIndex=0;
+
+function defaultState(){
+  return {
+    streak:0, lastStreakDate:null, days:{},
+    chapters:{ path:new Array(PATH_CHAPTERS.length).fill(false), micro:new Array(MICRO_CHAPTERS.length).fill(false), pharma:new Array(PHARMA_CHAPTERS.length).fill(false) },
+    weekGrid:{ path:[false,false,false,false,false], micro:[false,false,false,false,false], pharma:[false,false,false,false,false] },
+    pyq:{ path:{p1:[false,false,false,false,false],p2:[false,false,false,false,false]}, micro:{p1:[false,false,false,false,false],p2:[false,false,false,false,false]}, pharma:{p1:[false,false,false,false,false],p2:[false,false,false,false,false]} },
+    notes:[], flashcards:[], seenAchievements:[]
+  };
+}
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function ensureDay(dateStr){ if(!state.days[dateStr]){ state.days[dateStr]={checklist:{path:false,micro:false,pharma:false,mcq:false,recall:false},mcq:{path:0,micro:0,pharma:0}}; } return state.days[dateStr]; }
+async function loadState(){ try{ const res=await window.storage.get("mbbs_state_v2",false); if(res&&res.value){ return Object.assign(defaultState(), JSON.parse(res.value)); } return defaultState(); }catch(e){ return defaultState(); } }
+async function saveState(){ try{ await window.storage.set("mbbs_state_v2", JSON.stringify(state), false); }catch(e){ showToast("Save failed — your last change may not persist"); } }
+function showToast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(showToast._t); showToast._t=setTimeout(()=>t.classList.remove("show"),2400); }
+
+/* ===================== INIT ===================== */
+(async function init(){
+  state = await loadState();
+  const appEl=document.getElementById("app"); const tpl=document.getElementById("mainTemplate");
+  appEl.innerHTML=""; appEl.appendChild(tpl.content.cloneNode(true));
+  bindTabs(); bindToday(); bindChapters(); bindPractice(); bindIntel(); bindMore();
+  renderAll();
+})();
+
+function renderAll(){
+  renderHeader(); renderCoach(); renderChecklist(); renderChapters(); renderMcq(); renderMcqBars();
+  renderWeekGrid(); renderPyq(); renderStats(); renderBadges(); renderNotes(); renderFlashcards();
+}
+
+function bindTabs(){
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+    });
+  });
+}
+
+function renderHeader(){
+  const now=new Date();
+  document.getElementById("dateline").textContent = now.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
+  const midnight=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const daysLeft=Math.max(0,Math.ceil((EXAM_DATE-midnight)/86400000));
+  document.getElementById("daysLeft").textContent=daysLeft;
+  document.getElementById("streakVal").textContent=state.streak+" 🔥";
+  const d=ensureDay(todayStr());
+  const done=Object.values(d.checklist).filter(Boolean).length;
+  document.getElementById("todayPct").textContent=Math.round((done/5)*100)+"%";
+}
+function renderCoach(){
+  const dayOfYear=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/86400000);
+  const msg=COACH_MESSAGES[dayOfYear % COACH_MESSAGES.length];
+  document.getElementById("coachHeadline").textContent=msg.h;
+  document.getElementById("coachBody").textContent=msg.b;
+}
+
+/* ===================== TODAY ===================== */
+function bindToday(){
+  document.getElementById("pomoSelect").addEventListener("click",(e)=>{
+    const pill=e.target.closest(".subj-pill"); if(!pill) return;
+    pomoSubject=pill.dataset.subj;
+    document.querySelectorAll(".subj-pill").forEach(p=>p.className="subj-pill");
+    pill.classList.add("sel-"+pomoSubject);
+  });
+  document.getElementById("pomoStart").addEventListener("click", togglePomo);
+  document.getElementById("pomoReset").addEventListener("click", resetPomo);
+}
+function renderChecklist(){
+  const d=ensureDay(todayStr()); const host=document.getElementById("checklist"); host.innerHTML="";
+  CHECKLIST_ITEMS.forEach(item=>{
+    const on=d.checklist[item.key];
+    const row=document.createElement("div"); row.className="checkrow"+(on?" done":"");
+    row.innerHTML=`<div class="checkbox ${on?'on':''}">${on?'✓':''}</div><span class="dot ${item.dot}"></span><div class="rtext"><div class="rtitle">${item.title}</div><div class="rsub">${item.sub}</div></div>`;
+    row.addEventListener("click", async ()=>{
+      d.checklist[item.key]=!d.checklist[item.key];
+      await saveState(); renderChecklist(); renderHeader(); await checkStreak(); await checkNewAchievements();
+    });
+    host.appendChild(row);
+  });
+  const doneCount=Object.values(d.checklist).filter(Boolean).length;
+  document.getElementById("todayFill").style.width=(doneCount/5*100)+"%";
+}
+function dateMinusDays(dateStr,n){ const d=new Date(dateStr+"T00:00:00"); d.setDate(d.getDate()-n); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+async function checkStreak(){
+  const t=todayStr(); const d=state.days[t]; const allDone=d&&Object.values(d.checklist).every(Boolean);
+  if(allDone && state.lastStreakDate!==t){
+    const yesterday=dateMinusDays(t,1);
+    state.streak=(state.lastStreakDate===yesterday)?state.streak+1:1;
+    state.lastStreakDate=t; await saveState(); renderHeader();
+    showToast("Streak day complete — "+state.streak+" 🔥");
+  } else if(!allDone && state.lastStreakDate===t){
+    state.streak=Math.max(0,state.streak-1); state.lastStreakDate=dateMinusDays(t,1);
+    await saveState(); renderHeader();
+  }
+}
+function fmtTime(s){ const m=Math.floor(s/60), sec=s%60; return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0"); }
+function togglePomo(){
+  const btn=document.getElementById("pomoStart");
+  if(pomoRunning){ clearInterval(pomoInterval); pomoRunning=false; btn.textContent="Resume"; }
+  else{
+    pomoRunning=true; btn.textContent="Pause";
+    pomoInterval=setInterval(()=>{
+      pomoSeconds--; document.getElementById("pomoDisplay").textContent=fmtTime(Math.max(0,pomoSeconds));
+      if(pomoSeconds<=0){ clearInterval(pomoInterval); pomoRunning=false; btn.textContent="Start"; showToast("Block complete — 10 min break, then log it in Practice"); pomoSeconds=45*60; }
+    },1000);
+  }
+}
+function resetPomo(){ clearInterval(pomoInterval); pomoRunning=false; pomoSeconds=45*60; document.getElementById("pomoDisplay").textContent=fmtTime(pomoSeconds); document.getElementById("pomoStart").textContent="Start"; }
+
+/* ===================== CHAPTERS ===================== */
+function bindChapters(){
+  document.getElementById("chaptersHost").addEventListener("click", async (e)=>{
+    const row=e.target.closest(".chapter-row"); if(!row) return;
+    const subj=row.dataset.subj, idx=Number(row.dataset.idx);
+    state.chapters[subj][idx]=!state.chapters[subj][idx];
+    await saveState(); renderChapters(); renderStats(); await checkNewAchievements();
+  });
+}
+function buildSubjBlock(name,subj,list){
+  const checked=state.chapters[subj].filter(Boolean).length;
+  let rows=list.map((ch,idx)=>{
+    const on=state.chapters[subj][idx];
+    return `<div class="chapter-row ${on?'on':''}" data-subj="${subj}" data-idx="${idx}">
+      <div class="checkbox ${on?'on':''}">${on?'✓':''}</div>
+      <span style="flex:1">${ch.n}</span>
+      ${ch.hy?'<span class="hy-star">★</span>':''}
+      <span class="paper-badge">${ch.paper}</span>
+    </div>`;
+  }).join("");
+  return `<div class="subj-block">
+    <div class="subj-head"><div class="subj-name"><span class="dot dot-${subj}"></span>${name}</div><div class="subj-count">${checked}/${list.length}</div></div>
+    <div class="progressbar" style="margin-bottom:12px;"><div class="progressfill" style="width:${(checked/list.length*100)}%; background:var(--${subj})"></div></div>
+    ${rows}
+  </div>`;
+}
+function renderChapters(){
+  document.getElementById("chaptersHost").innerHTML =
+    buildSubjBlock("Pathology","path",PATH_CHAPTERS) + '<div style="height:18px"></div>' +
+    buildSubjBlock("Microbiology","micro",MICRO_CHAPTERS) + '<div style="height:18px"></div>' +
+    buildSubjBlock("Pharmacology","pharma",PHARMA_CHAPTERS);
+}
+
+/* ===================== PRACTICE ===================== */
+function bindPractice(){
+  document.getElementById("mcqHost").addEventListener("click", async (e)=>{
+    const btn=e.target.closest(".mcq-btn"); if(!btn) return;
+    const subj=btn.dataset.subj, amt=Number(btn.dataset.amt);
+    const d=ensureDay(todayStr()); d.mcq[subj]+=amt;
+    await saveState(); renderMcq(); renderMcqBars(); renderStats(); await checkNewAchievements();
+    showToast("+"+amt+" logged");
+  });
+  document.getElementById("weekGrid").addEventListener("click", async (e)=>{
+    const cell=e.target.closest(".wg-cell"); if(!cell) return;
+    const subj=cell.dataset.subj, idx=Number(cell.dataset.idx);
+    state.weekGrid[subj][idx]=!state.weekGrid[subj][idx];
+    await saveState(); renderWeekGrid();
+  });
+}
+function renderMcq(){
+  const d=ensureDay(todayStr()); const host=document.getElementById("mcqHost");
+  const subjects=[["path","Pathology"],["micro","Microbiology"],["pharma","Pharmacology"]];
+  host.innerHTML=subjects.map(([key,label])=>`
+    <div class="mcq-row">
+      <span class="tag tag-${key}">${label.slice(0,5).toUpperCase()}</span>
+      <div class="mcq-label">${label}</div>
+      <div class="mcq-today">${d.mcq[key]}</div>
+      <button class="mcq-btn" data-subj="${key}" data-amt="10">+10</button>
+      <button class="mcq-btn" data-subj="${key}" data-amt="25">+25</button>
+    </div>`).join("") + `<div style="margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-soft)">Today's total: <strong style="color:var(--micro)">${d.mcq.path+d.mcq.micro+d.mcq.pharma}</strong></div>`;
+}
+function renderMcqBars(){
+  const host=document.getElementById("mcqBars"); const t=todayStr(); let vals=[];
+  for(let i=6;i>=0;i--){ const dt=dateMinusDays(t,i); const dayData=state.days[dt]; const total=dayData?dayData.mcq.path+dayData.mcq.micro+dayData.mcq.pharma:0; const label=new Date(dt+"T00:00:00").toLocaleDateString("en-IN",{weekday:"short"}).slice(0,2); vals.push({total,label}); }
+  const max=Math.max(1,...vals.map(v=>v.total));
+  host.innerHTML=vals.map(v=>`<div class="bar-col"><div class="bar" style="height:${Math.max(2,(v.total/max)*80)}px"></div><div class="bar-label">${v.label}</div></div>`).join("");
+}
+function renderWeekGrid(){
+  const host=document.getElementById("weekGrid"); let html=`<div></div>`;
+  WEEK_LABELS.forEach(w=>{ html+=`<div class="wg-head">${w.replace("\n","<br>")}</div>`; });
+  [["path","PATH"],["micro","MICRO"],["pharma","PHARMA"]].forEach(([key,label])=>{
+    html+=`<div class="wg-row-label">${label}</div>`;
+    for(let i=0;i<5;i++){ const on=state.weekGrid[key][i]; html+=`<div class="wg-cell ${on?'on-'+key:''}" data-subj="${key}" data-idx="${i}">${on?'✓':''}</div>`; }
+  });
+  host.innerHTML=html;
+}
+
+/* ===================== EXAM INTEL: PYQ TRACKER ===================== */
+function bindIntel(){
+  document.getElementById("pyqHost").addEventListener("click",(e)=>{
+    const cell=e.target.closest(".pyq-cell"); if(!cell) return;
+    const subj=cell.dataset.subj, paper=cell.dataset.paper, idx=Number(cell.dataset.idx);
+    state.pyq[subj][paper][idx]=!state.pyq[subj][paper][idx];
+    saveState(); renderPyq();
+  });
+}
+function buildPyqTable(name,subj){
+  let head=`<div></div>`+PYQ_YEARS.map(y=>`<div class="pyq-head">${y}</div>`).join("");
+  function row(paper,label){
+    let cells=`<div class="pyq-row-label">${label}</div>`;
+    for(let i=0;i<5;i++){ const on=state.pyq[subj][paper][i]; cells+=`<div class="pyq-cell ${on?'on':''}" data-subj="${subj}" data-paper="${paper}" data-idx="${i}">${on?'✓':''}</div>`; }
+    return cells;
+  }
+  return `<div style="margin-bottom:14px;"><div style="font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:13px; margin-bottom:6px;">${name}</div>
+    <div class="pyqgrid">${head}${row('p1','P1')}${row('p2','P2')}</div></div>`;
+}
+function renderPyq(){
+  document.getElementById("pyqHost").innerHTML = buildPyqTable("Pathology","path")+buildPyqTable("Microbiology","micro")+buildPyqTable("Pharmacology","pharma");
+}
+
+/* ===================== STATS / ACHIEVEMENTS ===================== */
+function renderStats(){
+  const totalChapters=PATH_CHAPTERS.length+MICRO_CHAPTERS.length+PHARMA_CHAPTERS.length;
+  const doneChapters=chapCount(state);
+  const host=document.getElementById("statGrid");
+  host.innerHTML=`
+    <div class="stat-box"><div class="stat-num">${state.streak}</div><div class="stat-label">Current streak (days)</div></div>
+    <div class="stat-box"><div class="stat-num">${fullDays(state)}</div><div class="stat-label">Fully complete days</div></div>
+    <div class="stat-box"><div class="stat-num">${doneChapters}/${totalChapters}</div><div class="stat-label">Chapters covered</div></div>
+    <div class="stat-box"><div class="stat-num">${totalMcq(state)}</div><div class="stat-label">Total MCQs solved</div></div>`;
+}
+function renderBadges(){
+  const host=document.getElementById("badgeGrid");
+  host.innerHTML=ACHIEVEMENTS.map(a=>{
+    const on=a.test(state);
+    return `<div class="badge ${on?'unlocked':''}"><div class="b-icon">${on?a.icon:'🔒'}</div><div class="b-title">${a.title}</div></div>`;
+  }).join("");
+}
+async function checkNewAchievements(){
+  const unlocked=ACHIEVEMENTS.filter(a=>a.test(state)).map(a=>a.id);
+  const newOnes=unlocked.filter(id=>!state.seenAchievements.includes(id));
+  if(newOnes.length){
+    const first=ACHIEVEMENTS.find(a=>a.id===newOnes[0]);
+    showToast("🏆 Achievement unlocked: "+first.title);
+    state.seenAchievements.push(...newOnes);
+    await saveState();
+  }
+  renderBadges();
+}
+
+/* ===================== MORE: NOTES / FLASHCARDS / BACKUP ===================== */
+function bindMore(){
+  document.getElementById("noteAdd").addEventListener("click", async ()=>{
+    const subject=document.getElementById("noteSubject").value;
+    const title=document.getElementById("noteTitle").value.trim();
+    const body=document.getElementById("noteBody").value.trim();
+    if(!title||!body){ showToast("Add a title and note text"); return; }
+    state.notes.unshift({id:Date.now(),subject,title,body,date:todayStr()});
+    await saveState();
+    document.getElementById("noteTitle").value=""; document.getElementById("noteBody").value="";
+    renderNotes(); showToast("Note saved");
+  });
+  document.getElementById("noteList").addEventListener("click", async (e)=>{
+    const btn=e.target.closest("[data-del-note]"); if(!btn) return;
+    state.notes=state.notes.filter(n=>n.id!==Number(btn.dataset.delNote));
+    await saveState(); renderNotes();
+  });
+  document.getElementById("fcAdd").addEventListener("click", async ()=>{
+    const subject=document.getElementById("fcSubject").value;
+    const front=document.getElementById("fcFront").value.trim();
+    const back=document.getElementById("fcBack").value.trim();
+    if(!front||!back){ showToast("Fill both front and back"); return; }
+    state.flashcards.push({id:Date.now(),subject,front,back});
+    await saveState();
+    document.getElementById("fcFront").value=""; document.getElementById("fcBack").value="";
+    fcIndex=state.flashcards.length-1; renderFlashcards(); showToast("Flashcard added");
+  });
+  document.getElementById("fcCard").addEventListener("click",()=>{
+    const card=document.getElementById("fcCard"); if(!state.flashcards.length) return;
+    const showing=card.dataset.showing; const c=state.flashcards[fcIndex];
+    if(showing==="front"){ card.textContent=c.back; card.dataset.showing="back"; }
+    else{ card.textContent=c.front; card.dataset.showing="front"; }
+  });
+  document.getElementById("fcPrev").addEventListener("click",()=>{ if(!state.flashcards.length) return; fcIndex=(fcIndex-1+state.flashcards.length)%state.flashcards.length; renderFlashcards(); });
+  document.getElementById("fcNext").addEventListener("click",()=>{ if(!state.flashcards.length) return; fcIndex=(fcIndex+1)%state.flashcards.length; renderFlashcards(); });
+  document.getElementById("exportBtn").addEventListener("click",()=>{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob); const a=document.createElement("a");
+    a.href=url; a.download="distinction-backup-"+todayStr()+".json";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    showToast("Backup downloaded");
+  });
+  document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
+  document.getElementById("importFile").addEventListener("change",(e)=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=async (ev)=>{
+      try{ const parsed=JSON.parse(ev.target.result); state=Object.assign(defaultState(),parsed); await saveState(); renderAll(); showToast("Backup restored"); }
+      catch(err){ showToast("Invalid backup file"); }
+    };
+    reader.readAsText(file); e.target.value="";
+  });
+}
+function renderNotes(){
+  document.getElementById("noteCount").textContent=state.notes.length;
+  const host=document.getElementById("noteList");
+  if(!state.notes.length){ host.innerHTML='<div style="font-size:12.5px;color:var(--ink-soft)">No notes yet.</div>'; return; }
+  host.innerHTML=state.notes.map(n=>`
+    <div class="item"><div class="item-top">
+      <div><span class="tag tag-${n.subject}">${n.subject.toUpperCase()}</span> <span class="item-title">${n.title}</span></div>
+      <button class="icon-btn" data-del-note="${n.id}">✕</button>
+    </div><div class="item-body">${n.body}</div></div>`).join("");
+}
+function renderFlashcards(){
+  document.getElementById("fcCount").textContent=state.flashcards.length;
+  const card=document.getElementById("fcCard"); const tag=document.getElementById("fcTag");
+  if(!state.flashcards.length){ card.textContent="Add a flashcard to start reviewing"; card.dataset.showing="front"; tag.textContent="—"; return; }
+  if(fcIndex>=state.flashcards.length) fcIndex=0;
+  const c=state.flashcards[fcIndex];
+  card.textContent=c.front; card.dataset.showing="front";
+  tag.textContent="Card "+(fcIndex+1)+" / "+state.flashcards.length+" — tap to flip";
+}
+</script>
+</body>
+</html>

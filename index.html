@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AIR 1 Command Center</title>
+<meta name="description" content="Free NEET PG prep tracker — MCQ counter, error log, revision cycles, flashcards, subject-wise weightage blueprint & more. No login needed.">
+<meta property="og:title" content="AIR 1 Command Center — Free NEET PG Prep Tracker">
+<meta property="og:description" content="MCQ counter + streak, error log, 5-cycle revision tracker, flashcards, subject blueprint, notes & resource library — all free, no signup, works offline.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0A0F1E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; background: #0A0F1E; }
+body { font-family: 'Inter', sans-serif; color: #EDEFF5; }
+
+.app-shell { min-height: 100vh; background: #0A0F1E; color: #EDEFF5; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; }
+
+.header { padding: 18px 18px 14px; background: linear-gradient(180deg, #10182B 0%, #0A0F1E 100%); border-bottom: 1px solid #1B2540; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.eyebrow { font-family: 'Space Grotesk', sans-serif; font-size: 11px; letter-spacing: 0.14em; color: #7C8AA3; font-weight: 600; }
+.streak-chip { display: flex; align-items: center; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E8B33D; background: rgba(232,179,61,0.1); padding: 3px 9px; border-radius: 20px; }
+.pulse-wrap { display: flex; align-items: center; gap: 14px; margin-top: 4px; }
+.pulse-svg { width: 58%; height: 40px; flex-shrink: 0; }
+.pulse-meta { display: flex; flex-direction: column; line-height: 1.1; }
+.pulse-num { font-family: 'Space Grotesk', sans-serif; font-size: 28px; font-weight: 700; color: #EDEFF5; }
+.pulse-label { font-size: 11px; color: #7C8AA3; }
+.examdate-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12px; color: #7C8AA3; flex-wrap: wrap; }
+.examdate-row input { background: #1B2540; border: 1px solid #2A3654; color: #EDEFF5; border-radius: 6px; padding: 6px 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+.main { flex: 1; padding: 16px 16px 90px; overflow-y: auto; }
+.panel { display: none; flex-direction: column; gap: 14px; }
+.panel.active { display: flex; }
+
+.back-row { display: flex; align-items: center; gap: 8px; margin-bottom: -4px; }
+.back-btn { background: none; border: none; color: #3FE0C5; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 0; }
+
+.card { background: #131B2E; border: 1px solid #1B2540; border-radius: 14px; padding: 16px; }
+.card-title { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #EDEFF5; }
+.card-subtitle { font-size: 11.5px; color: #7C8AA3; margin: -8px 0 12px; line-height: 1.4; }
+
+.checkrow { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; color: #C4CADA; font-family: 'Inter', sans-serif; font-size: 13.5px; padding: 9px 0; text-align: left; cursor: pointer; }
+.checkrow:disabled { cursor: default; opacity: 0.75; }
+.checkrow.done { color: #EDEFF5; }
+.auto-tag { font-size: 10px; color: #7C8AA3; font-family: 'JetBrains Mono', monospace; margin-left: 4px; }
+.checkbox { width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #2A3654; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #0A0F1E; font-size: 11px; }
+.checkbox.on { background: #3FE0C5; border-color: #3FE0C5; }
+
+.progressbar { height: 6px; background: #1B2540; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.progressfill { height: 100%; background: #3FE0C5; transition: width 0.3s ease; }
+
+.bars { display: flex; align-items: flex-end; justify-content: space-between; height: 80px; gap: 6px; }
+.bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.bar { width: 100%; max-width: 22px; background: #3FE0C5; border-radius: 3px 3px 0 0; }
+.bar-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #7C8AA3; }
+
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-box { background: #131B2E; border: 1px solid #1B2540; border-radius: 12px; padding: 14px; }
+.stat-num { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 600; color: #3FE0C5; }
+.stat-label { font-size: 11px; color: #7C8AA3; margin-top: 3px; line-height: 1.3; }
+
+.reminder-note { font-size: 12px; color: #7C8AA3; line-height: 1.5; padding: 12px 14px; border-left: 2px solid #FF5A52; background: rgba(255,90,82,0.06); border-radius: 0 8px 8px 0; }
+.info-note { font-size: 12px; color: #7C8AA3; line-height: 1.5; padding: 12px 14px; border-left: 2px solid #3FE0C5; background: rgba(63,224,197,0.06); border-radius: 0 8px 8px 0; }
+
+.row-gap { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+select, .num-input, .text-input { background: #1B2540; border: 1px solid #2A3654; color: #EDEFF5; border-radius: 8px; padding: 9px 10px; font-family: 'Inter', sans-serif; font-size: 13px; width: 100%; margin-bottom: 8px; }
+.num-input { width: 90px; flex-shrink: 0; margin-bottom: 0; }
+select { margin-bottom: 0; flex: 1; min-width: 110px; }
+textarea.text-input { resize: none; font-family: 'Inter', sans-serif; }
+
+.btn-primary { background: #3FE0C5; color: #0A0F1E; border: none; border-radius: 8px; padding: 9px 14px; font-weight: 600; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; flex-shrink: 0; }
+.btn-primary.full { width: 100%; margin-top: 2px; }
+.btn-secondary { background: #1B2540; color: #C4CADA; border: 1px solid #2A3654; border-radius: 8px; padding: 9px 12px; font-weight: 600; font-size: 12px; cursor: pointer; flex: 1; }
+
+.today-total { font-size: 13px; color: #7C8AA3; margin-top: 4px; }
+.today-total strong { color: #3FE0C5; font-family: 'JetBrains Mono', monospace; }
+
+.empty-note { font-size: 12.5px; color: #7C8AA3; line-height: 1.5; }
+
+.recur-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #1B2540; font-size: 13px; }
+.recur-row:last-child { border-bottom: none; }
+.recur-topic { flex: 1; text-transform: capitalize; }
+.recur-count { font-family: 'JetBrains Mono', monospace; color: #FF5A52; font-size: 12px; }
+
+.log-list { display: flex; flex-direction: column; gap: 8px; }
+.log-item { background: #0F1626; border: 1px solid #1B2540; border-radius: 10px; padding: 10px 12px; }
+.log-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.log-date { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: #7C8AA3; flex: 1; }
+.log-topic { font-size: 13.5px; font-weight: 500; }
+.log-note { font-size: 12px; color: #9AA3B8; margin-top: 3px; }
+.icon-btn { background: none; border: none; color: #7C8AA3; cursor: pointer; padding: 2px; font-size: 14px; }
+
+.tag { font-size: 10.5px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.tag-red { background: rgba(255,90,82,0.15); color: #FF8781; }
+.tag-amber { background: rgba(232,179,61,0.15); color: #E8B33D; }
+.tag-teal { background: rgba(63,224,197,0.15); color: #3FE0C5; font-family: 'JetBrains Mono', monospace; }
+.tag-blue { background: rgba(99,146,255,0.15); color: #8FB0FF; }
+
+.cycle-table { display: flex; flex-direction: column; }
+.cycle-header-row, .cycle-row { display: grid; grid-template-columns: 1.6fr repeat(5, 1fr); align-items: center; gap: 4px; }
+.cycle-header-row { margin-bottom: 6px; }
+.cycle-col-label { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #7C8AA3; }
+.cycle-row { padding: 6px 0; border-bottom: 1px solid #161F36; }
+.cycle-subject-col { font-size: 12.5px; color: #C4CADA; }
+.cycle-dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #2A3654; background: none; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: #0A0F1E; cursor: pointer; font-size: 10px; }
+.cycle-dot.done { background: #3FE0C5; border-color: #3FE0C5; }
+
+.trend-chart { width: 100%; }
+.trend-svg { width: 100%; height: 100px; }
+
+.toast { position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%); background: #1B2540; border: 1px solid #2A3654; color: #EDEFF5; font-size: 12.5px; padding: 8px 16px; border-radius: 20px; max-width: 440px; z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; text-align: center; }
+.toast.show { opacity: 1; }
+
+.tabbar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: #10182B; border-top: 1px solid #1B2540; display: flex; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); z-index: 10; }
+.tabbtn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: #7C8AA3; font-size: 10px; padding: 6px 1px; cursor: pointer; border-radius: 10px; }
+.tabbtn.active { color: #3FE0C5; background: rgba(63,224,197,0.08); }
+.tabbtn svg { width: 17px; height: 17px; }
+
+.export-row { display: flex; gap: 8px; margin-top: 4px; }
+
+/* More menu grid */
+.more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.more-item { background: #131B2E; border: 1px solid #1B2540; border-radius: 14px; padding: 16px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; cursor: pointer; text-align: left; }
+.more-item svg { width: 20px; height: 20px; color: #3FE0C5; }
+.more-item-label { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; }
+.more-item-sub { font-size: 10.5px; color: #7C8AA3; line-height: 1.3; }
+
+/* Blueprint */
+.subj-card { border-bottom: 1px solid #1B2540; padding: 14px 0; }
+.subj-card:last-child { border-bottom: none; }
+.subj-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.subj-name { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; }
+.subj-weight { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #3FE0C5; background: rgba(63,224,197,0.1); padding: 2px 8px; border-radius: 20px; }
+.subj-topics { font-size: 12px; color: #C4CADA; line-height: 1.6; margin-bottom: 6px; }
+.subj-topics b { color: #EDEFF5; }
+.subj-books { font-size: 11.5px; color: #7C8AA3; }
+.subj-books b { color: #9AA3B8; }
+
+.example-box { background: #0F1626; border: 1px dashed #2A3654; border-radius: 8px; padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #8FB0FF; line-height: 1.7; margin-bottom: 10px; white-space: pre-wrap; }
+.hint-inline { font-size: 11px; color: #7C8AA3; margin-top: 4px; }
+
+/* Flashcards */
+.flip-card { background: #131B2E; border: 1px solid #2A3654; border-radius: 14px; padding: 24px 16px; min-height: 130px; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; font-size: 15px; line-height: 1.5; }
+.flip-card .fc-side-label { position: absolute; top: 10px; left: 14px; font-size: 10px; color: #7C8AA3; font-family: 'JetBrains Mono', monospace; }
+.flip-card-wrap { position: relative; }
+.fc-nav { display: flex; gap: 8px; margin-top: 10px; }
+.fc-progress { text-align: center; font-size: 11.5px; color: #7C8AA3; margin-top: 6px; font-family: 'JetBrains Mono', monospace; }
+
+/* Buddy */
+.buddy-card { background: #0F1626; border: 1px solid #1B2540; border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.buddy-name { font-weight: 600; font-size: 13.5px; }
+.buddy-stats { display: flex; gap: 12px; }
+.buddy-stat { text-align: center; }
+.buddy-stat-num { font-family: 'JetBrains Mono', monospace; font-size: 15px; color: #3FE0C5; }
+.buddy-stat-label { font-size: 9px; color: #7C8AA3; }
+
+/* Credits */
+.credit-box { text-align: center; padding: 20px 10px; }
+.credit-name { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 700; }
+.credit-handle { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #3FE0C5; margin-top: 4px; }
+.credit-tag { font-size: 11.5px; color: #7C8AA3; margin-top: 10px; line-height: 1.6; }
+
+@media (max-width: 360px) {
+  .pulse-svg { width: 48%; }
+  .pulse-num { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <header class="header">
+    <div class="header-top">
+      <div class="eyebrow">AIR 1 · COMMAND CENTER</div>
+      <div class="streak-chip">🔥 <span id="streakVal">0</span>d streak</div>
+    </div>
+    <div class="pulse-wrap">
+      <svg viewBox="0 0 320 46" class="pulse-svg" preserveAspectRatio="none" id="pulseSvg"></svg>
+      <div class="pulse-meta">
+        <div class="pulse-num" id="daysLeftVal">—</div>
+        <div class="pulse-label" id="daysLeftLabel">set exam date</div>
+      </div>
+    </div>
+    <div class="examdate-row">
+      <label>Exam date</label>
+      <input type="date" id="examDateInput" />
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <section class="card">
+        <div class="card-title">Today's non-negotiables</div>
+        <button class="checkrow" id="chk-mcq" disabled>
+          <span class="checkbox" id="chk-mcq-box"></span>
+          <span id="chk-mcq-label">MCQs solved: 0 / 150</span><span class="auto-tag">(auto)</span>
+        </button>
+        <button class="checkrow" id="chk-revision">
+          <span class="checkbox" id="chk-revision-box"></span>
+          <span>Revision block done</span>
+        </button>
+        <button class="checkrow" id="chk-errors">
+          <span class="checkbox" id="chk-errors-box"></span>
+          <span>Error log reviewed</span>
+        </button>
+        <button class="checkrow" id="chk-sleep">
+          <span class="checkbox" id="chk-sleep-box"></span>
+          <span>7 hrs sleep last night</span>
+        </button>
+        <div class="progressbar"><div class="progressfill" id="mcqProgressFill" style="width:0%"></div></div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">Last 7 days — MCQ volume</div>
+        <div class="bars" id="barsRow"></div>
+      </section>
+
+      <section class="stat-grid">
+        <div class="stat-box"><div class="stat-num" id="statErrorsWeek">0</div><div class="stat-label">errors logged this week</div></div>
+        <div class="stat-box"><div class="stat-num" id="statCycles">0/0</div><div class="stat-label">revision cycles done</div></div>
+        <div class="stat-box"><div class="stat-num" id="statTests">0</div><div class="stat-label">grand tests logged</div></div>
+        <div class="stat-box"><div class="stat-num" id="statDaysLeft2">—</div><div class="stat-label">days remaining</div></div>
+      </section>
+
+      <div class="reminder-note">Rank = coverage × retention − errors. If today's boxes aren't checked, tomorrow doesn't fix it — it compounds it.</div>
+
+      <section class="card">
+        <div class="card-title">Backup your data</div>
+        <div class="empty-note">Everything here lives only in this browser. Export weekly so you never lose it.</div>
+        <div class="export-row">
+          <button class="btn-secondary" id="exportBtn">⬇ Export backup</button>
+          <button class="btn-secondary" id="importBtn">⬆ Import backup</button>
+        </div>
+        <input type="file" id="importFile" accept="application/json" style="display:none" />
+      </section>
+    </div>
+
+    <!-- MCQ -->
+    <div class="panel" id="panel-mcq">
+      <section class="card">
+        <div class="card-title">Log MCQs solved today</div>
+        <div class="row-gap">
+          <select id="mcqSubject"></select>
+          <input class="num-input" type="number" placeholder="count" id="mcqCountInput" />
+          <button class="btn-primary" id="mcqAddBtn">+ Add</button>
+        </div>
+        <div class="today-total">Today: <strong id="mcqTodayTotal">0</strong> MCQs</div>
+      </section>
+      <section class="stat-grid">
+        <div class="stat-box"><div class="stat-num" id="mcqAllTime">0</div><div class="stat-label">total MCQs logged (goal: 15,000–20,000)</div></div>
+        <div class="stat-box"><div class="stat-num" id="mcqPct">0%</div><div class="stat-label">of target volume</div></div>
+      </section>
+      <div class="reminder-note">After every set: mark each answer as Correct-Confident, Correct-Guess, or Wrong. Anything not confidently correct goes into the Error tab immediately — not later.</div>
+    </div>
+
+    <!-- ERRORS -->
+    <div class="panel" id="panel-errors">
+      <section class="card">
+        <div class="card-title">Log a mistake</div>
+        <input class="text-input" placeholder="Topic (e.g. Nephrotic syndrome)" id="errTopic" />
+        <select id="errType"></select>
+        <textarea class="text-input" placeholder="Correct concept, one line" id="errNote" rows="2"></textarea>
+        <button class="btn-primary full" id="errAddBtn">+ Add to log</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Recurring topics (≥3 = re-study now)</div>
+        <div id="recurList"></div>
+      </section>
+      <section class="card">
+        <div class="card-title">Full error log (<span id="errCount">0</span>)</div>
+        <div class="log-list" id="errList"></div>
+      </section>
+    </div>
+
+    <!-- REVISION -->
+    <div class="panel" id="panel-revision">
+      <section class="card">
+        <div class="card-title">Revision cycle tracker</div>
+        <div class="empty-note" style="margin-bottom:10px;">Tap a circle to mark that subject's revision cycle complete. Aim for all 5 before exam day.</div>
+        <div class="cycle-table" id="cycleTable"></div>
+      </section>
+    </div>
+
+    <!-- MORE MENU -->
+    <div class="panel" id="panel-more">
+      <div class="more-grid">
+        <button class="more-item" data-open="tests">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <span class="more-item-label">Test Scores</span>
+          <span class="more-item-sub">Log grand tests, see trend</span>
+        </button>
+        <button class="more-item" data-open="blueprint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="more-item-label">Blueprint</span>
+          <span class="more-item-sub">Weightage, topics, books</span>
+        </button>
+        <button class="more-item" data-open="flashcards">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M6 3h12"/><path d="M9 3v4"/><path d="M15 3v4"/></svg>
+          <span class="more-item-label">Flashcards</span>
+          <span class="more-item-sub">Create & review by subject</span>
+        </button>
+        <button class="more-item" data-open="notes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span class="more-item-label">Notes</span>
+          <span class="more-item-sub">Subject-wise notes maker</span>
+        </button>
+        <button class="more-item" data-open="resources">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          <span class="more-item-label">Resource Library</span>
+          <span class="more-item-sub">Save book/PDF links by subject</span>
+        </button>
+        <button class="more-item" data-open="buddy">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="more-item-label">Study Squad</span>
+          <span class="more-item-sub">Track a friend alongside you</span>
+        </button>
+        <button class="more-item" data-open="about" style="grid-column: span 2;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <span class="more-item-label">About / Credits</span>
+          <span class="more-item-sub">Who built this</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TESTS -->
+    <div class="panel" id="panel-tests">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">Log a grand test score</div>
+        <input class="text-input" placeholder="Test name (e.g. GT-14)" id="testName" />
+        <input class="text-input" type="number" placeholder="Score / percentile" id="testScore" />
+        <button class="btn-primary full" id="testAddBtn">+ Add</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Score trend</div>
+        <div id="trendWrap"><div class="empty-note">No tests logged yet. Trend matters more than any single score.</div></div>
+      </section>
+      <section class="card">
+        <div class="card-title">All tests</div>
+        <div class="log-list" id="testList"></div>
+      </section>
+    </div>
+
+    <!-- BLUEPRINT -->
+    <div class="panel" id="panel-blueprint">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">NEET PG Subject Blueprint</div>
+        <div class="card-subtitle">Weightage ranges below are approximate, based on commonly observed PYQ-pattern analysis by senior aspirants and faculty — NBE does not publish an official per-subject split, so treat these as planning guides, not guarantees. Book names are standard, well-established references, not a paid recommendation.</div>
+        <div id="blueprintList"></div>
+      </section>
+      <div class="reminder-note">Use this to allocate time, not to skip subjects. Small subjects (Psychiatry, Anesthesia, Radiology, Derma, ENT, Ophtho) have short syllabi and are easy near-100% marks — don't under-revise them.</div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div class="panel" id="panel-flashcards">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">Create a flashcard</div>
+        <select id="fcSubject"></select>
+        <input class="text-input" placeholder="Front (question / prompt)" id="fcFront" />
+        <textarea class="text-input" placeholder="Back (answer)" id="fcBack" rows="2"></textarea>
+        <button class="btn-primary full" id="fcAddBtn">+ Add flashcard</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Bulk add</div>
+        <div class="card-subtitle">Paste many flashcards at once. One line = one card. Put :: between the question and the answer.</div>
+        <div class="example-box">Drug of choice for typhoid :: Ceftriaxone or Azithromycin
+Most common organism in UTI :: E. coli
+Earliest sign of digoxin toxicity :: Nausea and vomiting</div>
+        <div class="hint-inline">↑ Copy this block, edit it, or paste your own lines below in the same Question :: Answer format.</div>
+        <textarea class="text-input" id="fcBulk" rows="4" placeholder="Type or paste your lines here, one flashcard per line..." style="margin-top:8px;"></textarea>
+        <button class="btn-primary full" id="fcBulkBtn">+ Add all lines</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Review</div>
+        <select id="fcFilterSubject"></select>
+        <div id="fcReviewArea"></div>
+      </section>
+      <section class="card">
+        <div class="card-title">All flashcards (<span id="fcCount">0</span>)</div>
+        <div class="log-list" id="fcList"></div>
+      </section>
+    </div>
+
+    <!-- NOTES -->
+    <div class="panel" id="panel-notes">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">New note</div>
+        <select id="noteSubject"></select>
+        <input class="text-input" placeholder="Title (e.g. Nephrotic vs Nephritic)" id="noteTitle" />
+        <textarea class="text-input" placeholder="Note content" id="noteBody" rows="4"></textarea>
+        <button class="btn-primary full" id="noteAddBtn">+ Save note</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Your notes (<span id="noteCount">0</span>)</div>
+        <div class="export-row" style="margin-bottom:10px;">
+          <button class="btn-secondary" id="notesExportBtn">⬇ Export all notes (.txt)</button>
+        </div>
+        <div class="log-list" id="noteList"></div>
+      </section>
+    </div>
+
+    <!-- RESOURCES -->
+    <div class="panel" id="panel-resources">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">Add a resource link</div>
+        <div class="card-subtitle">This app can't store PDF files directly (browser storage limits) — save a link to the PDF/Drive folder/book instead, tagged by subject, so it's always one tap away.</div>
+        <select id="resSubject"></select>
+        <input class="text-input" placeholder="Title (e.g. Robbins Pathology PDF)" id="resTitle" />
+        <input class="text-input" placeholder="Link (https://...)" id="resUrl" />
+        <input class="text-input" placeholder="Note (optional)" id="resNote" />
+        <button class="btn-primary full" id="resAddBtn">+ Add resource</button>
+      </section>
+      <section class="card">
+        <div class="card-title">Library (<span id="resCount">0</span>)</div>
+        <div class="log-list" id="resList"></div>
+      </section>
+    </div>
+
+    <!-- BUDDY -->
+    <div class="panel" id="panel-buddy">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="card-title">Add a study buddy</div>
+        <div class="card-subtitle">This is manual accountability, not live sync (a static tool can't auto-share data across phones). Agree with your friend to update each other's numbers daily — it works if you both actually do it.</div>
+        <input class="text-input" placeholder="Friend's name" id="buddyName" />
+        <button class="btn-primary full" id="buddyAddBtn">+ Add buddy</button>
+      </section>
+      <section class="card">
+        <div class="card-title">You vs your squad</div>
+        <div class="hint-inline" style="margin-bottom:10px;">Your numbers update themselves from your own MCQ log. For each buddy below, tap directly on their Streak/Today number and type in whatever they tell you — do this daily for it to mean anything.</div>
+        <div class="buddy-card" style="margin-bottom:8px;">
+          <div class="buddy-name">You</div>
+          <div class="buddy-stats">
+            <div class="buddy-stat"><div class="buddy-stat-num" id="buddyYouStreak">0</div><div class="buddy-stat-label">STREAK</div></div>
+            <div class="buddy-stat"><div class="buddy-stat-num" id="buddyYouMcq">0</div><div class="buddy-stat-label">TODAY</div></div>
+          </div>
+        </div>
+        <div id="buddyList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </section>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="panel" id="panel-about">
+      <div class="back-row"><button class="back-btn" data-back="more">‹ More</button></div>
+      <section class="card">
+        <div class="credit-box">
+          <div class="card-title" style="justify-content:center; display:flex;">AIR 1 Command Center</div>
+          <div class="credit-tag">A free, offline-first prep tracker built for NEET PG aspirants who trust systems over shortcuts.</div>
+          <div style="margin-top:18px; border-top:1px solid #1B2540; padding-top:16px;">
+            <div class="credit-name">Kada Maruthi</div>
+            <div class="credit-handle">Instagram: @maruthi.kada</div>
+          </div>
+          <div class="credit-tag" style="margin-top:14px;">If this helped you, share it forward. Data stays on your own device — nothing is uploaded anywhere.</div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="tabbar">
+    <button class="tabbtn active" data-tab="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>Today</span></button>
+    <button class="tabbtn" data-tab="mcq"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg><span>MCQs</span></button>
+    <button class="tabbtn" data-tab="errors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>Errors</span></button>
+    <button class="tabbtn" data-tab="revision"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg><span>Revision</span></button>
+    <button class="tabbtn" data-tab="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>More</span></button>
+  </nav>
+
+</div>
+
+<script>
+/* ============================================================
+   AIR 1 COMMAND CENTER — v2
+   Single-file offline app. Persists via localStorage.
+============================================================ */
+
+const STORAGE_KEY = "air1-tracker-data-v2";
+const SUBJECTS = ["Medicine","Surgery","OBG","Pediatrics","Pathology","Pharmacology","Microbiology","PSM","Anatomy","Physiology","Biochemistry","Ophthalmology","ENT","Orthopedics","Psychiatry","Anesthesia","Radiology","Dermatology","Forensic"];
+const ERROR_TYPES = ["Conceptual Gap","Silly Mistake","Misread Question","Guess-Wrong"];
+const MCQ_TARGET = 150;
+
+const BLUEPRINT = [
+  { s: "Medicine", w: "24–30 Qs", topics: "Cardiology (heart failure, arrhythmias, ECG), Nephrology (AKI/CKD, glomerular disease), Endocrinology (thyroid, diabetes), Infectious disease, Neurology (stroke, seizures)", books: "Harrison's (reference) + a concise NEET PG review book + PYQ bank" },
+  { s: "Surgery", w: "20–24 Qs", topics: "GI surgery, Trauma, Urology basics, Breast, Surgical oncology principles, Fluid/electrolyte management", books: "Bailey & Love (reference) + review book + PYQs" },
+  { s: "Pathology", w: "16–18 Qs", topics: "General pathology (inflammation, neoplasia), Hematology, Systemic pathology by organ, Image-based questions", books: "Robbins (concept) + a picture-based/quick-review pathology book" },
+  { s: "Pharmacology", w: "16–18 Qs", topics: "Autonomic pharmacology, Antimicrobials, CNS drugs, Cardiovascular drugs, Drug interactions/ADRs", books: "KD Tripathi (concept) + a rapid-revision pharm book + PYQs" },
+  { s: "OBG", w: "16–18 Qs", topics: "Antenatal care & complications, Labour, Contraception, Gynecologic oncology basics, Menstrual disorders", books: "A standard OBG textbook + review book + PYQs" },
+  { s: "PSM (Community Medicine)", w: "16–20 Qs", topics: "Epidemiology & biostatistics, National health programs, Nutrition, Demography, Environmental & occupational health", books: "Park's Textbook of PSM + review notes" },
+  { s: "Microbiology", w: "12–14 Qs", topics: "Bacteriology (staining, culture, key organisms), Virology, Parasitology, Immunology basics", books: "Ananthanarayan (reference) + rapid review + PYQs" },
+  { s: "Pediatrics", w: "10–12 Qs", topics: "Growth & development, Neonatology, Immunization schedule, Common pediatric infections & nutrition disorders", books: "A standard pediatrics review book + PYQs" },
+  { s: "Anatomy", w: "8–10 Qs", topics: "Upper/lower limb, Thorax, Abdomen, Head & neck, Neuroanatomy, Embryology basics", books: "BD Chaurasia (reference) + high-yield anatomy review" },
+  { s: "Physiology", w: "8–10 Qs", topics: "Nerve-muscle, CVS, Renal, Endocrine, GI physiology", books: "Guyton (concept) + review notes" },
+  { s: "Biochemistry", w: "8–10 Qs", topics: "Enzymes, Vitamins, Metabolism (carb/lipid/protein), Molecular biology basics, Inborn errors", books: "Harper's/Lippincott (reference) + quick-revision notes" },
+  { s: "Orthopedics", w: "8–10 Qs", topics: "Fractures (classification, complications), Bone tumors, Infections (osteomyelitis, TB), Congenital conditions", books: "A standard ortho review book + PYQs" },
+  { s: "Ophthalmology", w: "6–8 Qs", topics: "Refractive errors, Cataract, Glaucoma, Retina basics, Common infections", books: "A concise ophtho review book — short syllabus, high accuracy possible" },
+  { s: "ENT", w: "6–8 Qs", topics: "Ear infections & hearing loss, Nose & sinus disorders, Throat & neck masses, ENT emergencies", books: "A concise ENT review book — short syllabus, high accuracy possible" },
+  { s: "Psychiatry", w: "4–6 Qs", topics: "Mood & psychotic disorders, Anxiety disorders, Substance use, Psychopharmacology basics", books: "A short psychiatry review book — very scorable per page invested" },
+  { s: "Anesthesia", w: "4–6 Qs", topics: "General vs regional anesthesia, Airway management, Common drugs & their side effects, ASA grading", books: "A short anesthesia review book" },
+  { s: "Radiology", w: "4–6 Qs", topics: "Chest X-ray patterns, CT/MRI basics, Contrast use, Classic radiological signs", books: "An image-based rapid review resource" },
+  { s: "Dermatology", w: "4–6 Qs", topics: "Common dermatoses, Drug reactions, Infections & infestations, Classic clinical photos", books: "A short image-based derma review book" },
+  { s: "Forensic Medicine", w: "4–6 Qs", topics: "Medico-legal aspects, Asphyxial deaths, Injuries & wound patterns, Toxicology basics", books: "A concise forensic review book — short and scorable" },
+];
+
+function defaultData() {
+  const revisionCycles = {};
+  SUBJECTS.forEach(s => revisionCycles[s] = [false,false,false,false,false]);
+  return {
+    examDate: "", dailyLogs: {}, errorLog: [], revisionCycles, testScores: [],
+    flashcards: [], notes: [], resources: [], buddies: []
+  };
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultData();
+    const parsed = JSON.parse(raw);
+    return Object.assign(defaultData(), parsed);
+  } catch (e) { return defaultData(); }
+}
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { showToast('Storage full — export a backup and clear old data'); }
+}
+
+let state = loadData();
+
+function localDateStr(d) {
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off * 60000);
+  return local.toISOString().slice(0,10);
+}
+function todayStr() { return localDateStr(new Date()); }
+function daysBetween(dateStr) {
+  if (!dateStr) return null;
+  const now = new Date(); now.setHours(0,0,0,0);
+  const target = new Date(dateStr); target.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+function computeStreak() {
+  let streak = 0, d = new Date();
+  for (;;) {
+    const key = localDateStr(d);
+    const log = state.dailyLogs[key];
+    if (log && log.mcqCount > 0) { streak++; d.setDate(d.getDate()-1); } else break;
+  }
+  return streak;
+}
+function getTodayLog() {
+  const t = todayStr();
+  if (!state.dailyLogs[t]) state.dailyLogs[t] = { mcqCount: 0, revisionDone: false, sleepOk: false, errorLogUpdated: false };
+  return state.dailyLogs[t];
+}
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => el.classList.remove('show'), 1600);
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+function fillSelectOnce(sel, items) {
+  if (sel.dataset.filled) return;
+  sel.innerHTML = items.map(x => `<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');
+  sel.dataset.filled = '1';
+}
+
+/* ---------------- Pulse strip ---------------- */
+function renderPulse() {
+  const streak = computeStreak();
+  const daysLeft = daysBetween(state.examDate);
+  document.getElementById('streakVal').textContent = streak;
+  document.getElementById('daysLeftVal').textContent = daysLeft !== null ? Math.max(daysLeft,0) : '—';
+  document.getElementById('daysLeftLabel').textContent = daysLeft !== null ? 'days to exam' : 'set exam date';
+  document.getElementById('statDaysLeft2').textContent = daysLeft !== null ? Math.max(daysLeft,0) : '—';
+
+  const beats = 14, active = Math.min(streak, beats);
+  const w = 320, h = 46, step = w / beats;
+  let points = [];
+  for (let i = 0; i <= beats; i++) {
+    const x = i * step, isPeak = i % 2 === 1, y = isPeak ? h*0.18 : h*0.82;
+    points.push(`${x},${h/2}`);
+    if (isPeak) points.push(`${x-step*0.15},${h/2}`, `${x},${y}`, `${x+step*0.15},${h/2}`);
+  }
+  const svg = document.getElementById('pulseSvg');
+  svg.innerHTML = `
+    <polyline points="${points.join(' ')}" fill="none" stroke="#1E2A47" stroke-width="2"/>
+    <polyline points="${points.slice(0, Math.max(2, active*2)).join(' ')}" fill="none" stroke="#3FE0C5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  `;
+
+  const input = document.getElementById('examDateInput');
+  if (document.activeElement !== input) input.value = state.examDate || '';
+}
+
+/* ---------------- Dashboard ---------------- */
+function renderDashboard() {
+  const log = getTodayLog();
+  const pct = Math.min(100, Math.round((log.mcqCount / MCQ_TARGET) * 100));
+
+  document.getElementById('chk-mcq-label').textContent = `MCQs solved: ${log.mcqCount} / ${MCQ_TARGET}`;
+  setCheckbox('chk-mcq-box', log.mcqCount >= MCQ_TARGET);
+  setCheckbox('chk-revision-box', log.revisionDone, 'chk-revision');
+  setCheckbox('chk-errors-box', log.errorLogUpdated, 'chk-errors');
+  setCheckbox('chk-sleep-box', log.sleepOk, 'chk-sleep');
+  document.getElementById('mcqProgressFill').style.width = pct + '%';
+
+  const bars = []; let maxCount = 1;
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = localDateStr(d);
+    const c = (state.dailyLogs[key] && state.dailyLogs[key].mcqCount) || 0;
+    bars.push({ key, c }); if (c > maxCount) maxCount = c;
+  }
+  document.getElementById('barsRow').innerHTML = bars.map(b => `
+    <div class="bar-col"><div class="bar" style="height:${Math.max(4,(b.c/maxCount)*64)}px"></div><div class="bar-label">${b.key.slice(8,10)}</div></div>`).join('');
+
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-7);
+  document.getElementById('statErrorsWeek').textContent = state.errorLog.filter(e => new Date(e.date) >= cutoff).length;
+
+  let total=0, done=0;
+  Object.values(state.revisionCycles).forEach(arr => arr.forEach(v => { total++; if(v) done++; }));
+  document.getElementById('statCycles').textContent = `${done}/${total}`;
+  document.getElementById('statTests').textContent = state.testScores.length;
+}
+function setCheckbox(boxId, checked, rowId) {
+  const box = document.getElementById(boxId);
+  box.textContent = checked ? '✓' : '';
+  box.classList.toggle('on', checked);
+  if (rowId) document.getElementById(rowId).classList.toggle('done', checked);
+}
+
+/* ---------------- MCQ panel ---------------- */
+function renderMcqPanel() {
+  fillSelectOnce(document.getElementById('mcqSubject'), SUBJECTS);
+  const log = getTodayLog();
+  document.getElementById('mcqTodayTotal').textContent = log.mcqCount;
+  const totalAllTime = Object.values(state.dailyLogs).reduce((s,l) => s + (l.mcqCount||0), 0);
+  document.getElementById('mcqAllTime').textContent = totalAllTime.toLocaleString();
+  document.getElementById('mcqPct').textContent = Math.round((totalAllTime/18000)*100) + '%';
+}
+
+/* ---------------- Error panel ---------------- */
+function renderErrorPanel() {
+  fillSelectOnce(document.getElementById('errType'), ERROR_TYPES);
+  const recurrence = {};
+  state.errorLog.forEach(e => { const k = e.topic.trim().toLowerCase(); recurrence[k] = (recurrence[k]||0)+1; });
+  const recurEntries = Object.entries(recurrence).filter(([,c]) => c>=3).sort((a,b)=>b[1]-a[1]);
+  const recurList = document.getElementById('recurList');
+  recurList.innerHTML = recurEntries.length === 0
+    ? `<div class="empty-note">No topic has recurred 3+ times yet. Keep logging honestly.</div>`
+    : recurEntries.map(([t,c]) => `<div class="recur-row">⚠️ <span class="recur-topic">${escapeHtml(t)}</span><span class="recur-count">×${c}</span></div>`).join('');
+
+  document.getElementById('errCount').textContent = state.errorLog.length;
+  const sorted = [...state.errorLog].sort((a,b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('errList').innerHTML = sorted.length === 0
+    ? `<div class="empty-note">Nothing logged yet.</div>`
+    : sorted.map(e => `
+      <div class="log-item">
+        <div class="log-item-top">
+          <span class="tag ${e.type==='Silly Mistake' ? 'tag-red' : 'tag-amber'}">${escapeHtml(e.type)}</span>
+          <span class="log-date">${e.date}</span>
+          <button class="icon-btn" data-remove-err="${e.id}">🗑</button>
+        </div>
+        <div class="log-topic">${escapeHtml(e.topic)}</div>
+        ${e.note ? `<div class="log-note">${escapeHtml(e.note)}</div>` : ''}
+      </div>`).join('');
+}
+
+/* ---------------- Revision panel ---------------- */
+function renderRevisionPanel() {
+  let html = `<div class="cycle-header-row"><div class="cycle-subject-col"></div>${[1,2,3,4,5].map(n=>`<div class="cycle-col-label">C${n}</div>`).join('')}</div>`;
+  SUBJECTS.forEach(s => {
+    html += `<div class="cycle-row"><div class="cycle-subject-col">${s}</div>`;
+    state.revisionCycles[s].forEach((done, idx) => {
+      html += `<button class="cycle-dot ${done?'done':''}" data-subject="${s}" data-idx="${idx}">${done?'✓':''}</button>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('cycleTable').innerHTML = html;
+}
+
+/* ---------------- Tests panel ---------------- */
+function renderTestPanel() {
+  const sorted = [...state.testScores].sort((a,b) => new Date(a.date) - new Date(b.date));
+  const trendWrap = document.getElementById('trendWrap');
+  if (sorted.length === 0) {
+    trendWrap.innerHTML = `<div class="empty-note">No tests logged yet. Trend matters more than any single score.</div>`;
+  } else {
+    const maxScore = Math.max(100, ...sorted.map(t => t.score));
+    const points = sorted.map((t,i) => {
+      const x = sorted.length===1 ? 150 : (i/(sorted.length-1))*290+5;
+      const y = 95 - (t.score/maxScore)*85;
+      return {x,y};
+    });
+    trendWrap.innerHTML = `<div class="trend-chart"><svg viewBox="0 0 300 100" class="trend-svg" preserveAspectRatio="none">
+      <polyline fill="none" stroke="#3FE0C5" stroke-width="2" points="${points.map(p=>`${p.x},${p.y}`).join(' ')}"/>
+      ${points.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#3FE0C5"/>`).join('')}
+    </svg></div>`;
+  }
+  const rev = [...sorted].reverse();
+  document.getElementById('testList').innerHTML = rev.length === 0 ? '' : rev.map(t => `
+    <div class="log-item">
+      <div class="log-item-top"><span class="tag tag-teal">${t.score}</span><span class="log-date">${t.date}</span><button class="icon-btn" data-remove-test="${t.id}">🗑</button></div>
+      <div class="log-topic">${escapeHtml(t.name)}</div>
+    </div>`).join('');
+}
+
+/* ---------------- Blueprint panel ---------------- */
+function renderBlueprint() {
+  document.getElementById('blueprintList').innerHTML = BLUEPRINT.map(b => `
+    <div class="subj-card">
+      <div class="subj-top"><div class="subj-name">${b.s}</div><div class="subj-weight">${b.w}</div></div>
+      <div class="subj-topics"><b>High-yield:</b> ${b.topics}</div>
+      <div class="subj-books"><b>Resources:</b> ${b.books}</div>
+    </div>`).join('');
+}
+
+/* ---------------- Flashcards panel ---------------- */
+let fcReviewIndex = 0;
+let fcFlipped = false;
+
+function renderFlashcardsSetup() {
+  fillSelectOnce(document.getElementById('fcSubject'), SUBJECTS);
+  const filterSel = document.getElementById('fcFilterSubject');
+  if (!filterSel.dataset.filled) {
+    filterSel.innerHTML = `<option value="__all__">All subjects</option>` + SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('');
+    filterSel.dataset.filled = '1';
+  }
+}
+function currentFcSet() {
+  const filter = document.getElementById('fcFilterSubject').value || '__all__';
+  return filter === '__all__' ? state.flashcards : state.flashcards.filter(c => c.subject === filter);
+}
+function renderFlashcardReview() {
+  const set = currentFcSet();
+  const area = document.getElementById('fcReviewArea');
+  if (set.length === 0) {
+    area.innerHTML = `<div class="empty-note" style="margin-top:8px;">No flashcards in this subject yet. Add some above.</div>`;
+    return;
+  }
+  if (fcReviewIndex >= set.length) fcReviewIndex = 0;
+  const card = set[fcReviewIndex];
+  area.innerHTML = `
+    <div class="flip-card-wrap" style="margin-top:10px;">
+      <div class="flip-card" id="fcFlipCard">
+        <span class="fc-side-label">${fcFlipped ? 'ANSWER' : 'QUESTION'} · ${escapeHtml(card.subject)}</span>
+        ${escapeHtml(fcFlipped ? card.back : card.front)}
+      </div>
+      <div class="fc-progress">${fcReviewIndex+1} / ${set.length} · tap card to flip</div>
+      <div class="fc-nav">
+        <button class="btn-secondary" id="fcPrevBtn">‹ Prev</button>
+        <button class="btn-secondary" id="fcNextBtn">Next ›</button>
+      </div>
+    </div>`;
+  document.getElementById('fcFlipCard').addEventListener('click', () => { fcFlipped = !fcFlipped; renderFlashcardReview(); });
+  document.getElementById('fcPrevBtn').addEventListener('click', () => { fcReviewIndex = (fcReviewIndex - 1 + set.length) % set.length; fcFlipped = false; renderFlashcardReview(); });
+  document.getElementById('fcNextBtn').addEventListener('click', () => { fcReviewIndex = (fcReviewIndex + 1) % set.length; fcFlipped = false; renderFlashcardReview(); });
+}
+function renderFlashcardList() {
+  document.getElementById('fcCount').textContent = state.flashcards.length;
+  const sorted = [...state.flashcards].reverse();
+  document.getElementById('fcList').innerHTML = sorted.length === 0 ? `<div class="empty-note">No flashcards yet.</div>` : sorted.map(c => `
+    <div class="log-item">
+      <div class="log-item-top"><span class="tag tag-blue">${escapeHtml(c.subject)}</span><span class="log-date"></span><button class="icon-btn" data-remove-fc="${c.id}">🗑</button></div>
+      <div class="log-topic">${escapeHtml(c.front)}</div>
+      <div class="log-note">${escapeHtml(c.back)}</div>
+    </div>`).join('');
+}
+function renderFlashcardsPanel() { renderFlashcardsSetup(); renderFlashcardReview(); renderFlashcardList(); }
+
+/* ---------------- Notes panel ---------------- */
+function renderNotesPanel() {
+  fillSelectOnce(document.getElementById('noteSubject'), SUBJECTS);
+  document.getElementById('noteCount').textContent = state.notes.length;
+  const sorted = [...state.notes].sort((a,b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('noteList').innerHTML = sorted.length === 0 ? `<div class="empty-note">No notes yet.</div>` : sorted.map(n => `
+    <div class="log-item">
+      <div class="log-item-top"><span class="tag tag-blue">${escapeHtml(n.subject)}</span><span class="log-date">${n.date}</span><button class="icon-btn" data-remove-note="${n.id}">🗑</button></div>
+      <div class="log-topic">${escapeHtml(n.title)}</div>
+      <div class="log-note">${escapeHtml(n.body)}</div>
+    </div>`).join('');
+}
+
+/* ---------------- Resources panel ---------------- */
+function renderResourcesPanel() {
+  fillSelectOnce(document.getElementById('resSubject'), SUBJECTS);
+  document.getElementById('resCount').textContent = state.resources.length;
+  const sorted = [...state.resources].reverse();
+  document.getElementById('resList').innerHTML = sorted.length === 0 ? `<div class="empty-note">No resources saved yet.</div>` : sorted.map(r => `
+    <div class="log-item">
+      <div class="log-item-top"><span class="tag tag-blue">${escapeHtml(r.subject)}</span><span class="log-date"></span><button class="icon-btn" data-remove-res="${r.id}">🗑</button></div>
+      <div class="log-topic"><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener" style="color:#3FE0C5; text-decoration:none;">${escapeHtml(r.title)} ↗</a></div>
+      ${r.note ? `<div class="log-note">${escapeHtml(r.note)}</div>` : ''}
+    </div>`).join('');
+}
+
+/* ---------------- Buddy panel ---------------- */
+function renderBuddyPanel() {
+  const log = getTodayLog();
+  document.getElementById('buddyYouStreak').textContent = computeStreak();
+  document.getElementById('buddyYouMcq').textContent = log.mcqCount;
+  const list = document.getElementById('buddyList');
+  list.innerHTML = state.buddies.length === 0 ? `<div class="empty-note">No buddies added yet.</div>` : state.buddies.map(b => `
+    <div class="buddy-card">
+      <div class="buddy-name">${escapeHtml(b.name)}</div>
+      <div class="buddy-stats">
+        <div class="buddy-stat"><input type="number" data-buddy-streak="${b.id}" value="${b.streak||0}" style="width:44px; background:#1B2540; border:1px solid #2A3654; color:#3FE0C5; border-radius:6px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; padding:3px;"><div class="buddy-stat-label">STREAK</div></div>
+        <div class="buddy-stat"><input type="number" data-buddy-mcq="${b.id}" value="${b.mcqToday||0}" style="width:44px; background:#1B2540; border:1px solid #2A3654; color:#3FE0C5; border-radius:6px; text-align:center; font-family:'JetBrains Mono',monospace; font-size:13px; padding:3px;"><div class="buddy-stat-label">TODAY</div></div>
+        <button class="icon-btn" data-remove-buddy="${b.id}">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ---------------- Master render ---------------- */
+function renderAll() {
+  renderPulse(); renderDashboard(); renderMcqPanel(); renderErrorPanel(); renderRevisionPanel();
+  renderTestPanel(); renderBlueprint(); renderFlashcardsPanel(); renderNotesPanel(); renderResourcesPanel(); renderBuddyPanel();
+}
+
+/* ---------------- Panel navigation ---------------- */
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('panel-' + name);
+  if (target) target.classList.add('active');
+  const mainTabs = ['dashboard','mcq','errors','revision','more'];
+  document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
+  if (mainTabs.includes(name)) {
+    const btn = document.querySelector(`.tabbtn[data-tab="${name}"]`);
+    if (btn) btn.classList.add('active');
+  } else {
+    const moreBtn = document.querySelector('.tabbtn[data-tab="more"]');
+    if (moreBtn) moreBtn.classList.add('active');
+  }
+  document.querySelector('.main').scrollTop = 0;
+}
+
+document.querySelectorAll('.tabbtn').forEach(btn => {
+  btn.addEventListener('click', () => switchPanel(btn.dataset.tab));
+});
+document.querySelectorAll('[data-open]').forEach(btn => {
+  btn.addEventListener('click', () => switchPanel(btn.dataset.open));
+});
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => switchPanel(btn.dataset.back));
+});
+
+/* ---------------- Event wiring: header ---------------- */
+document.getElementById('examDateInput').addEventListener('change', (e) => {
+  state.examDate = e.target.value;
+  saveData(); renderAll();
+});
+
+/* ---------------- Dashboard checkboxes ---------------- */
+document.getElementById('chk-revision').addEventListener('click', () => { const l = getTodayLog(); l.revisionDone = !l.revisionDone; saveData(); renderAll(); });
+document.getElementById('chk-errors').addEventListener('click', () => { const l = getTodayLog(); l.errorLogUpdated = !l.errorLogUpdated; saveData(); renderAll(); });
+document.getElementById('chk-sleep').addEventListener('click', () => { const l = getTodayLog(); l.sleepOk = !l.sleepOk; saveData(); renderAll(); });
+
+/* ---------------- MCQ ---------------- */
+document.getElementById('mcqAddBtn').addEventListener('click', () => {
+  const n = parseInt(document.getElementById('mcqCountInput').value, 10);
+  if (!n || n <= 0) return;
+  const subject = document.getElementById('mcqSubject').value;
+  getTodayLog().mcqCount += n;
+  saveData();
+  document.getElementById('mcqCountInput').value = '';
+  showToast(`+${n} MCQs logged (${subject})`);
+  renderAll();
+});
+
+/* ---------------- Errors ---------------- */
+document.getElementById('errAddBtn').addEventListener('click', () => {
+  const topic = document.getElementById('errTopic').value.trim();
+  if (!topic) return;
+  const type = document.getElementById('errType').value;
+  const note = document.getElementById('errNote').value.trim();
+  state.errorLog.unshift({ id: Date.now(), date: todayStr(), topic, type, note });
+  getTodayLog().errorLogUpdated = true;
+  saveData();
+  document.getElementById('errTopic').value = ''; document.getElementById('errNote').value = '';
+  showToast('Error logged'); renderAll();
+});
+document.getElementById('errList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-err]'); if (!btn) return;
+  state.errorLog = state.errorLog.filter(x => x.id !== Number(btn.dataset.removeErr));
+  saveData(); renderAll();
+});
+
+/* ---------------- Revision ---------------- */
+document.getElementById('cycleTable').addEventListener('click', (e) => {
+  const btn = e.target.closest('.cycle-dot'); if (!btn) return;
+  const subject = btn.dataset.subject, idx = Number(btn.dataset.idx);
+  state.revisionCycles[subject][idx] = !state.revisionCycles[subject][idx];
+  saveData();
+  if (state.revisionCycles[subject][idx]) showToast(`${subject} · Cycle ${idx+1} marked done`);
+  renderAll();
+});
+
+/* ---------------- Tests ---------------- */
+document.getElementById('testAddBtn').addEventListener('click', () => {
+  const name = document.getElementById('testName').value.trim();
+  const score = parseFloat(document.getElementById('testScore').value);
+  if (!name || isNaN(score)) return;
+  state.testScores.push({ id: Date.now(), date: todayStr(), name, score });
+  saveData();
+  document.getElementById('testName').value = ''; document.getElementById('testScore').value = '';
+  showToast('Test score logged'); renderAll();
+});
+document.getElementById('testList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-test]'); if (!btn) return;
+  state.testScores = state.testScores.filter(x => x.id !== Number(btn.dataset.removeTest));
+  saveData(); renderAll();
+});
+
+/* ---------------- Flashcards ---------------- */
+document.getElementById('fcAddBtn').addEventListener('click', () => {
+  const subject = document.getElementById('fcSubject').value;
+  const front = document.getElementById('fcFront').value.trim();
+  const back = document.getElementById('fcBack').value.trim();
+  if (!front || !back) return;
+  state.flashcards.push({ id: Date.now(), subject, front, back });
+  saveData();
+  document.getElementById('fcFront').value = ''; document.getElementById('fcBack').value = '';
+  showToast('Flashcard added'); renderAll();
+});
+document.getElementById('fcBulkBtn').addEventListener('click', () => {
+  const subject = document.getElementById('fcSubject').value;
+  const raw = document.getElementById('fcBulk').value;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  let added = 0;
+  lines.forEach(line => {
+    const parts = line.split('::');
+    if (parts.length >= 2) {
+      const front = parts[0].trim(), back = parts.slice(1).join('::').trim();
+      if (front && back) { state.flashcards.push({ id: Date.now() + added, subject, front, back }); added++; }
+    }
+  });
+  if (added > 0) { saveData(); document.getElementById('fcBulk').value = ''; showToast(`${added} flashcards added`); renderAll(); }
+  else showToast('Use format: Front :: Back, one per line');
+});
+document.getElementById('fcFilterSubject').addEventListener('change', () => { fcReviewIndex = 0; fcFlipped = false; renderFlashcardReview(); });
+document.getElementById('fcList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-fc]'); if (!btn) return;
+  state.flashcards = state.flashcards.filter(x => x.id !== Number(btn.dataset.removeFc));
+  saveData(); renderAll();
+});
+
+/* ---------------- Notes ---------------- */
+document.getElementById('noteAddBtn').addEventListener('click', () => {
+  const subject = document.getElementById('noteSubject').value;
+  const title = document.getElementById('noteTitle').value.trim();
+  const body = document.getElementById('noteBody').value.trim();
+  if (!title || !body) return;
+  state.notes.push({ id: Date.now(), date: todayStr(), subject, title, body });
+  saveData();
+  document.getElementById('noteTitle').value = ''; document.getElementById('noteBody').value = '';
+  showToast('Note saved'); renderAll();
+});
+document.getElementById('noteList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-note]'); if (!btn) return;
+  state.notes = state.notes.filter(x => x.id !== Number(btn.dataset.removeNote));
+  saveData(); renderAll();
+});
+document.getElementById('notesExportBtn').addEventListener('click', () => {
+  if (state.notes.length === 0) { showToast('No notes to export'); return; }
+  const text = state.notes.map(n => `[${n.subject}] ${n.title}\n${n.date}\n${n.body}\n\n---\n`).join('\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `air1-notes-${todayStr()}.txt`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  showToast('Notes exported');
+});
+
+/* ---------------- Resources ---------------- */
+document.getElementById('resAddBtn').addEventListener('click', () => {
+  const subject = document.getElementById('resSubject').value;
+  const title = document.getElementById('resTitle').value.trim();
+  const url = document.getElementById('resUrl').value.trim();
+  const note = document.getElementById('resNote').value.trim();
+  if (!title || !url) return;
+  state.resources.push({ id: Date.now(), subject, title, url, note });
+  saveData();
+  document.getElementById('resTitle').value = ''; document.getElementById('resUrl').value = ''; document.getElementById('resNote').value = '';
+  showToast('Resource added'); renderAll();
+});
+document.getElementById('resList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-res]'); if (!btn) return;
+  state.resources = state.resources.filter(x => x.id !== Number(btn.dataset.removeRes));
+  saveData(); renderAll();
+});
+
+/* ---------------- Buddy ---------------- */
+document.getElementById('buddyAddBtn').addEventListener('click', () => {
+  const name = document.getElementById('buddyName').value.trim();
+  if (!name) return;
+  state.buddies.push({ id: Date.now(), name, streak: 0, mcqToday: 0 });
+  saveData();
+  document.getElementById('buddyName').value = '';
+  showToast('Buddy added'); renderAll();
+});
+document.getElementById('buddyList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-remove-buddy]'); if (!btn) return;
+  state.buddies = state.buddies.filter(x => x.id !== Number(btn.dataset.removeBuddy));
+  saveData(); renderAll();
+});
+document.getElementById('buddyList').addEventListener('change', (e) => {
+  const streakInput = e.target.closest('[data-buddy-streak]');
+  const mcqInput = e.target.closest('[data-buddy-mcq]');
+  if (streakInput) {
+    const id = Number(streakInput.dataset.buddyStreak);
+    const b = state.buddies.find(x => x.id === id);
+    if (b) { b.streak = parseInt(streakInput.value,10) || 0; saveData(); }
+  }
+  if (mcqInput) {
+    const id = Number(mcqInput.dataset.buddyMcq);
+    const b = state.buddies.find(x => x.id === id);
+    if (b) { b.mcqToday = parseInt(mcqInput.value,10) || 0; saveData(); }
+  }
+});
+
+/* ---------------- Backup / restore ---------------- */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `air1-tracker-backup-${todayStr()}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+});
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      state = Object.assign(defaultData(), parsed);
+      saveData(); showToast('Backup restored'); renderAll();
+    } catch (err) { showToast('Invalid backup file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ---------------- Init ---------------- */
+try {
+  renderAll();
+} catch (err) {
+  console.error('AIR1 Tracker init error:', err);
+  showToast('Something failed to load — check console');
+}
+</script>
+</body>
+</html>
